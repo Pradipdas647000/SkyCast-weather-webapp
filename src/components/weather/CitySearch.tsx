@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input';
 
 interface Props {
   onSearch: (city: string) => void;
+  onCurrentLocation: () => void;
 }
 
-export function CitySearch({ onSearch }: Props) {
+export function CitySearch({ onSearch, onCurrentLocation }: Props) {
   const [query, setQuery] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -34,6 +35,7 @@ export function CitySearch({ onSearch }: Props) {
       <div className="absolute inset-y-0 right-3 flex items-center">
         <button
           type="button"
+          onClick={onCurrentLocation}
           className="p-1 hover:bg-accent rounded-lg transition-colors"
           title="Use current location"
         >

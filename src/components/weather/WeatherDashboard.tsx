@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { fetchWeather } from '@/lib/weather-service';
+import React, { useState, useEffect, useCallback } from 'react';
+import { fetchWeather, fetchWeatherByCoords } from '@/lib/weather-service';
 import { WeatherData } from '@/lib/weather-types';
 import { CurrentWeatherCard } from './CurrentWeatherCard';
 import { HourlyChart } from './HourlyChart';
@@ -9,9 +9,8 @@ import { DailyForecast } from './DailyForecast';
 import { WeatherDetails } from './WeatherDetails';
 import { CitySearch } from './CitySearch';
 import { AIWeatherSummary } from './AIWeatherSummary';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Sun, Cloud, CloudRain, CloudSnow, Search, MapPin, Wind, Droplets, Thermometer, Info } from 'lucide-react';
+import { Sun, Thermometer, Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export function WeatherDashboard() {
@@ -20,7 +19,7 @@ export function WeatherDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [unit, setUnit] = useState<'C' | 'F'>('C');
 
-  const loadWeather = async (city: string = 'San Francisco') => {
+  const loadWeather = useCallback(async (city: string = 'San Francisco') => {
     setLoading(true);
     setError(null);
     try {
@@ -31,11 +30,43 @@ export function WeatherDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  const handleCurrentLocation = useCallback(() => {
+    if (!("geolocation" in navigator)) {
+      setError("Geolocation is not supported by your browser.");
+      loadWeather();
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const data = await fetchWeatherByCoords(position.coords.latitude, position.coords.longitude);
+          setWeatherData(data);
+        } catch (err) {
+          setError('Failed to fetch weather for your location.');
+          loadWeather(); // Fallback to default
+        } finally {
+          setLoading(false);
+        }
+      },
+      (geoError) => {
+        console.error("Geolocation error:", geoError);
+        setError("Unable to retrieve your location. Showing default city.");
+        loadWeather('San Francisco');
+      },
+      { timeout: 10000 }
+    );
+  }, [loadWeather]);
 
   useEffect(() => {
-    loadWeather();
-  }, []);
+    // Attempt to fetch user location on mount
+    handleCurrentLocation();
+  }, [handleCurrentLocation]);
 
   const handleSearch = (city: string) => {
     loadWeather(city);
@@ -47,34 +78,27 @@ export function WeatherDashboard() {
 
   if (loading && !weatherData) {
     return (
-      <div className="container mx-auto p-4 space-y-8 animate-pulse">
+      <div className="container mx-auto p-4 space-y-8">
         <div className="flex justify-between items-center">
           <Skeleton className="h-10 w-48" />
-          <Skeleton className="h-10 w-32" />
+          <div className="flex gap-4">
+            <Skeleton className="h-10 w-64" />
+            <Skeleton className="h-10 w-12" />
+          </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Skeleton className="h-64 lg:col-span-2 rounded-3xl" />
-          <Skeleton className="h-64 rounded-3xl" />
+          <Skeleton className="h-80 lg:col-span-2 rounded-[2.5rem]" />
+          <Skeleton className="h-80 rounded-3xl" />
         </div>
-        <Skeleton className="h-96 rounded-3xl" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto p-4">
-        <Alert variant="destructive">
-          <Info className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-        <button 
-          onClick={() => loadWeather()} 
-          className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md"
-        >
-          Try Again
-        </button>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-8">
+             <Skeleton className="h-40 rounded-3xl mb-6" />
+             <Skeleton className="h-64 rounded-3xl" />
+          </div>
+          <div className="lg:col-span-4">
+             <Skeleton className="h-96 rounded-3xl" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -91,7 +115,7 @@ export function WeatherDashboard() {
             <h1 className="text-2xl font-bold tracking-tight">ForecastAI</h1>
           </div>
           <div className="flex items-center gap-4 w-full md:w-auto">
-            <CitySearch onSearch={handleSearch} />
+            <CitySearch onSearch={handleSearch} onCurrentLocation={handleCurrentLocation} />
             <button
               onClick={toggleUnit}
               className="px-4 py-2 h-10 border rounded-xl font-medium hover:bg-accent transition-colors shrink-0"
@@ -100,6 +124,14 @@ export function WeatherDashboard() {
             </button>
           </div>
         </header>
+
+        {error && (
+          <Alert variant="destructive" className="rounded-2xl">
+            <Info className="h-4 w-4" />
+            <AlertTitle>Notice</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
         {/* Hero Section */}
         {weatherData && (
