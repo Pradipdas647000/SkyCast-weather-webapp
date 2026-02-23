@@ -58,7 +58,6 @@ const AiWeatherSummaryOutputSchema = z.object({
 export type AiWeatherSummaryOutput = z.infer<typeof AiWeatherSummaryOutputSchema>;
 
 // Define a tool to extract significant weather events from the forecast.
-// This simulates a more complex decision-making process for "relevance".
 const extractSignificantWeatherEvents = ai.defineTool(
   {
     name: 'extractSignificantWeatherEvents',
@@ -80,14 +79,14 @@ const extractSignificantWeatherEvents = ai.defineTool(
     } else if (current.temperature < 0) {
       significantEvents.push(`It's currently freezing at ${current.temperature}°C.`);
     }
-    if (current.aqi > 100) { // Assuming AQI > 100 is unhealthy
+    if (current.aqi > 100) {
       significantEvents.push(`Air quality is currently poor with an AQI of ${current.aqi}.`);
     }
-    if (current.windSpeed > 30) { // e.g., > 30 km/h is noticeable
+    if (current.windSpeed > 30) {
         significantEvents.push(`Current wind speeds are high at ${current.windSpeed} km/h.`);
     }
 
-    // Daily forecast analysis (next 7 days)
+    // Daily forecast analysis
     daily.forEach(day => {
       if (day.maxTemp > 30) {
         significantEvents.push(`${day.date} will be hot with a high of ${day.maxTemp}°C.`);
@@ -100,10 +99,10 @@ const extractSignificantWeatherEvents = ai.defineTool(
       }
     });
 
-    // Hourly forecast analysis (next 24 hours) - looking for immediate impact
+    // Hourly forecast analysis
     const next24HoursRain = hourly.filter(hour => hour.precipitationChance >= 60).length;
     if (next24HoursRain > 0) {
-        if (next24HoursRain >= 8) { // if many hours have high rain chance
+        if (next24HoursRain >= 8) {
             significantEvents.push('Expect significant rainfall within the next 24 hours.');
         } else {
             significantEvents.push('There is a chance of rain in the coming hours.');
@@ -114,13 +113,13 @@ const extractSignificantWeatherEvents = ai.defineTool(
   }
 );
 
-
 // Define the prompt for generating the weather summary
 const aiWeatherSummaryPrompt = ai.definePrompt({
   name: 'aiWeatherSummaryPrompt',
+  model: 'googleai/gemini-1.5-flash',
   input: { schema: AiWeatherSummaryInputSchema },
   output: { schema: AiWeatherSummaryOutputSchema },
-  tools: [extractSignificantWeatherEvents], // Make the tool available to the LLM
+  tools: [extractSignificantWeatherEvents],
   prompt: `You are an intelligent weather assistant that provides concise, easy-to-understand summaries of weather conditions.
 Your goal is to highlight the most relevant and impactful information for the user, drawing implications from the data.
 Prioritize safety and comfort-related information.
@@ -158,8 +157,6 @@ const aiWeatherSummaryFlow = ai.defineFlow(
     outputSchema: AiWeatherSummaryOutputSchema,
   },
   async (input) => {
-    // The prompt will implicitly call the `extractSignificantWeatherEvents` tool if it deems it necessary
-    // based on the system prompt and its internal reasoning.
     const { output } = await aiWeatherSummaryPrompt(input);
     return output!;
   }
