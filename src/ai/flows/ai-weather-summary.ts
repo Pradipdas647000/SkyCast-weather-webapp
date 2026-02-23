@@ -50,8 +50,10 @@ const AiWeatherSummaryInputSchema = z.object({
 
 export type AiWeatherSummaryInput = z.infer<typeof AiWeatherSummaryInputSchema>;
 
-// Output Schema for the AI weather summary flow
-const AiWeatherSummaryOutputSchema = z.string().describe('A concise, AI-generated summary of the current and forecasted weather conditions, highlighting key information and implications.');
+// Output Schema for the AI weather summary flow - wrapped in an object for better reliability
+const AiWeatherSummaryOutputSchema = z.object({
+  summary: z.string().describe('A concise, AI-generated summary of the current and forecasted weather conditions, highlighting key information and implications.')
+});
 
 export type AiWeatherSummaryOutput = z.infer<typeof AiWeatherSummaryOutputSchema>;
 

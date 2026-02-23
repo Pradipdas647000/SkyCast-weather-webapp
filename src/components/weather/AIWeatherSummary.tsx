@@ -37,7 +37,8 @@ export function AIWeatherSummary({ weatherData }: Props) {
         dailyForecast: weatherData.daily,
         hourlyForecast: weatherData.hourly
       });
-      setSummary(result);
+      // Update state with the summary field from the result object
+      setSummary(result.summary);
     } catch (err: any) {
       console.error('Failed to generate AI summary:', err);
       
