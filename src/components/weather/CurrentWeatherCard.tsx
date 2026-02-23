@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CurrentWeather } from '@/lib/weather-types';
-import { Sun, Cloud, CloudRain, CloudSnow, Wind, Droplets, ArrowUp, ArrowDown } from 'lucide-react';
+import { Sun, Cloud, CloudRain, CloudSnow, Wind, Droplets, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface Props {
@@ -13,6 +13,12 @@ interface Props {
 export function CurrentWeatherCard({ data, unit }: Props) {
   const temp = unit === 'F' ? Math.round((data.temperature * 9/5) + 32) : Math.round(data.temperature);
   const feelsLike = unit === 'F' ? Math.round((data.feelsLike * 9/5) + 32) : Math.round(data.feelsLike);
+
+  // Check if it's "Your Location" format from the service
+  const isYourLocation = data.cityName.startsWith('Your Location');
+  const cityNameMatch = data.cityName.match(/\(([^)]+)\)/);
+  const citySubName = cityNameMatch ? cityNameMatch[1] : null;
+  const mainTitle = isYourLocation ? 'Your Location' : data.cityName;
 
   const getIcon = () => {
     switch (data.condition) {
@@ -43,7 +49,13 @@ export function CurrentWeatherCard({ data, unit }: Props) {
       <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
         <div className="space-y-4">
           <div>
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-2">{data.cityName}</h2>
+            <div className="flex items-center gap-2 mb-1">
+              {isYourLocation && <MapPin className="h-5 w-5 text-primary" />}
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight">{mainTitle}</h2>
+            </div>
+            {citySubName && (
+              <p className="text-xl font-medium text-primary mb-2 opacity-80">{citySubName}</p>
+            )}
             <p className="text-muted-foreground text-lg">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
           </div>
           

@@ -33,6 +33,23 @@ async function getCoordinates(city: string) {
 }
 
 /**
+ * Performs reverse geocoding to get city name from coordinates.
+ */
+async function reverseGeocode(lat: number, lon: number): Promise<string> {
+  try {
+    const response = await fetch(
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`
+    );
+    const data = await response.json();
+    // Prefer city, then locality, then principalSubdivision
+    return data.city || data.locality || data.principalSubdivision || "";
+  } catch (error) {
+    console.error('Reverse geocoding failed:', error);
+    return "";
+  }
+}
+
+/**
  * Fetches full weather data for given coordinates.
  */
 async function getWeatherData(lat: number, lon: number, cityName: string): Promise<WeatherData> {
@@ -116,8 +133,9 @@ export async function fetchWeather(city: string): Promise<WeatherData> {
  */
 export async function fetchWeatherByCoords(lat: number, lon: number): Promise<WeatherData> {
   try {
-    // Note: We use "Your Location" since Open-Meteo doesn't provide free reverse geocoding
-    return await getWeatherData(lat, lon, "Your Location");
+    const cityName = await reverseGeocode(lat, lon);
+    const displayName = cityName ? `Your Location (${cityName})` : "Your Location";
+    return await getWeatherData(lat, lon, displayName);
   } catch (error) {
     console.error('Error fetching weather by coords:', error);
     throw error;
