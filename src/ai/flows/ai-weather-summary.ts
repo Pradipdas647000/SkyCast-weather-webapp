@@ -157,6 +157,8 @@ const aiWeatherSummaryFlow = ai.defineFlow(
     outputSchema: AiWeatherSummaryOutputSchema,
   },
   async (input) => {
+    // The prompt will implicitly call the `extractSignificantWeatherEvents` tool if it deems it necessary
+    // based on the system prompt and its internal reasoning.
     const { output } = await aiWeatherSummaryPrompt(input);
     return output!;
   }
