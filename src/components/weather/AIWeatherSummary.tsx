@@ -51,6 +51,8 @@ export function AIWeatherSummary({ weatherData }: Props) {
       } else {
         setError('Unable to generate AI weather summary at this time.');
       }
+      // Reset the city tracker on error so we can retry automatically if needed
+      lastRequestedCityRef.current = null;
     } finally {
       setLoading(false);
       isRequestInFlightRef.current = false;

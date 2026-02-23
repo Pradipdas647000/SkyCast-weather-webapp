@@ -116,7 +116,6 @@ const extractSignificantWeatherEvents = ai.defineTool(
 // Define the prompt for generating the weather summary
 const aiWeatherSummaryPrompt = ai.definePrompt({
   name: 'aiWeatherSummaryPrompt',
-  model: 'googleai/gemini-1.5-flash',
   input: { schema: AiWeatherSummaryInputSchema },
   output: { schema: AiWeatherSummaryOutputSchema },
   tools: [extractSignificantWeatherEvents],
