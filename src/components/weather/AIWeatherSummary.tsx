@@ -16,20 +16,22 @@ export function AIWeatherSummary({ weatherData }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Ref to track the last city we successfully (or attempted to) generate a summary for
-  const lastProcessedCityRef = useRef<string | null>(null);
+  // Ref to track the city name we are currently processing or have finished processing
+  const lastAttemptedCityRef = useRef<string | null>(null);
 
   const generateSummary = useCallback(async (force: boolean = false) => {
     const currentCity = weatherData.current.cityName;
 
-    // Skip if we already have a summary for this city and aren't forcing a refresh
-    if (!force && currentCity === lastProcessedCityRef.current && summary) {
+    // Skip if we are already processing or have already tried/succeeded for this city
+    // (unless we are forcing a refresh via the retry button)
+    if (!force && currentCity === lastAttemptedCityRef.current) {
       return;
     }
 
     setLoading(true);
     setError(null);
-    lastProcessedCityRef.current = currentCity;
+    // Mark this city as attempted immediately to prevent concurrent or loop triggers
+    lastAttemptedCityRef.current = currentCity;
 
     try {
       const result = await aiWeatherSummary({
@@ -37,7 +39,6 @@ export function AIWeatherSummary({ weatherData }: Props) {
         dailyForecast: weatherData.daily,
         hourlyForecast: weatherData.hourly
       });
-      // Update state with the summary field from the result object
       setSummary(result.summary);
     } catch (err: any) {
       console.error('Failed to generate AI summary:', err);
@@ -49,17 +50,20 @@ export function AIWeatherSummary({ weatherData }: Props) {
         setError('Unable to generate AI weather summary at this time.');
       }
       
-      // Clear city ref on error so it can be retried automatically if city changes again
-      // or manually via the retry button
-      lastProcessedCityRef.current = null;
+      // Note: We do NOT clear lastAttemptedCityRef here. 
+      // This is crucial to prevent the auto-retry loop on errors.
     } finally {
       setLoading(false);
     }
-  }, [weatherData, summary]);
+  }, [weatherData]);
 
   // Trigger generation when the city changes
   useEffect(() => {
-    generateSummary();
+    // Only auto-trigger if the city is actually different from our last attempt
+    if (weatherData.current.cityName !== lastAttemptedCityRef.current) {
+      setSummary(null); // Clear old summary when city truly changes
+      generateSummary();
+    }
   }, [weatherData.current.cityName, generateSummary]);
 
   return (
