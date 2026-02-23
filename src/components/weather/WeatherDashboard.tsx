@@ -9,14 +9,23 @@ import { DailyForecast } from './DailyForecast';
 import { WeatherDetails } from './WeatherDetails';
 import { CitySearch } from './CitySearch';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Sun, Thermometer, Info } from 'lucide-react';
+import { Sun, Moon, Thermometer, Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 
 export function WeatherDashboard() {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [unit, setUnit] = useState<'C' | 'F'>('C');
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  // Handle theme switching
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.remove('light', 'dark');
+    root.classList.add(theme);
+  }, [theme]);
 
   const loadWeather = useCallback(async (city: string = 'San Francisco') => {
     setLoading(true);
@@ -63,7 +72,6 @@ export function WeatherDashboard() {
   }, [loadWeather]);
 
   useEffect(() => {
-    // Attempt to fetch user location on mount
     handleCurrentLocation();
   }, [handleCurrentLocation]);
 
@@ -75,6 +83,10 @@ export function WeatherDashboard() {
     setUnit(prev => prev === 'C' ? 'F' : 'C');
   };
 
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
+
   if (loading && !weatherData) {
     return (
       <div className="container mx-auto p-4 space-y-8">
@@ -82,6 +94,7 @@ export function WeatherDashboard() {
           <Skeleton className="h-10 w-48" />
           <div className="flex gap-4">
             <Skeleton className="h-10 w-64" />
+            <Skeleton className="h-10 w-12" />
             <Skeleton className="h-10 w-12" />
           </div>
         </div>
@@ -114,17 +127,33 @@ export function WeatherDashboard() {
           </div>
           <div className="flex items-center gap-4 w-full md:w-auto">
             <CitySearch onSearch={handleSearch} onCurrentLocation={handleCurrentLocation} />
-            <button
-              onClick={toggleUnit}
-              className="px-4 py-2 h-10 border rounded-xl font-medium hover:bg-accent transition-colors shrink-0"
-            >
-              °{unit}
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={toggleTheme}
+                className="h-10 w-10 rounded-xl border bg-background hover:bg-accent transition-colors"
+                title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+              >
+                {theme === 'light' ? (
+                  <Moon className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all" />
+                ) : (
+                  <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all" />
+                )}
+                <span className="sr-only">Toggle theme</span>
+              </Button>
+              <button
+                onClick={toggleUnit}
+                className="px-4 py-2 h-10 border rounded-xl font-medium hover:bg-accent bg-background transition-colors shrink-0"
+              >
+                °{unit}
+              </button>
+            </div>
           </div>
         </header>
 
         {error && (
-          <Alert variant="destructive" className="rounded-2xl">
+          <Alert variant="destructive" className="rounded-2xl shadow-sm">
             <Info className="h-4 w-4" />
             <AlertTitle>Notice</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
