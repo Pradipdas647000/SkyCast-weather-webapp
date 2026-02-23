@@ -50,7 +50,7 @@ const AiWeatherSummaryInputSchema = z.object({
 
 export type AiWeatherSummaryInput = z.infer<typeof AiWeatherSummaryInputSchema>;
 
-// Output Schema for the AI weather summary flow - wrapped in an object for better reliability
+// Output Schema for the AI weather summary flow
 const AiWeatherSummaryOutputSchema = z.object({
   summary: z.string().describe('A concise, AI-generated summary of the current and forecasted weather conditions, highlighting key information and implications.')
 });
@@ -116,7 +116,7 @@ const extractSignificantWeatherEvents = ai.defineTool(
 // Define the prompt for generating the weather summary
 const aiWeatherSummaryPrompt = ai.definePrompt({
   name: 'aiWeatherSummaryPrompt',
-  model: 'googleai/gemini-1.5-flash',
+  model: 'gemini-1.5-flash',
   input: { schema: AiWeatherSummaryInputSchema },
   output: { schema: AiWeatherSummaryOutputSchema },
   tools: [extractSignificantWeatherEvents],
