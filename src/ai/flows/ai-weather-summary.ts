@@ -116,7 +116,7 @@ const extractSignificantWeatherEvents = ai.defineTool(
 // Define the prompt for generating the weather summary
 const aiWeatherSummaryPrompt = ai.definePrompt({
   name: 'aiWeatherSummaryPrompt',
-  model: 'gemini-1.5-flash',
+  model: 'googleai/gemini-1.5-flash',
   input: { schema: AiWeatherSummaryInputSchema },
   output: { schema: AiWeatherSummaryOutputSchema },
   tools: [extractSignificantWeatherEvents],
@@ -157,6 +157,8 @@ const aiWeatherSummaryFlow = ai.defineFlow(
     outputSchema: AiWeatherSummaryOutputSchema,
   },
   async (input) => {
+    // The prompt will implicitly call the `extractSignificantWeatherEvents` tool if it deems it necessary
+    // based on the system prompt and its internal reasoning.
     const { output } = await aiWeatherSummaryPrompt(input);
     return output!;
   }
