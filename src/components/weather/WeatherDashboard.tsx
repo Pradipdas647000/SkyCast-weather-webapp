@@ -8,7 +8,6 @@ import { HourlyChart } from './HourlyChart';
 import { DailyForecast } from './DailyForecast';
 import { WeatherDetails } from './WeatherDetails';
 import { CitySearch } from './CitySearch';
-import { AIWeatherSummary } from './AIWeatherSummary';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Sun, Thermometer, Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -92,7 +91,6 @@ export function WeatherDashboard() {
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-8">
-             <Skeleton className="h-40 rounded-3xl mb-6" />
              <Skeleton className="h-64 rounded-3xl" />
           </div>
           <div className="lg:col-span-4">
@@ -138,8 +136,7 @@ export function WeatherDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             <div className="lg:col-span-8 space-y-6">
               <CurrentWeatherCard data={weatherData.current} unit={unit} />
-              {/* Using city name as key to ensure complete component reset on city change */}
-              <AIWeatherSummary key={weatherData.current.cityName} weatherData={weatherData} />
+              
               <div className="bg-card border rounded-3xl p-6 shadow-sm overflow-hidden">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="font-semibold text-lg flex items-center gap-2">
