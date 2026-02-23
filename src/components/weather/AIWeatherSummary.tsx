@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -18,7 +17,6 @@ export function AIWeatherSummary({ weatherData }: Props) {
   const [error, setError] = useState<string | null>(null);
   
   // Track the city for which we've successfully initiated a request.
-  // This persists across re-renders within the same mount.
   const lastRequestedCityRef = useRef<string | null>(null);
   // Track if a request is currently in flight to prevent overlapping calls.
   const isRequestInFlightRef = useRef(false);
@@ -28,7 +26,7 @@ export function AIWeatherSummary({ weatherData }: Props) {
     
     // Safety checks to prevent redundant API calls
     if (!force && isRequestInFlightRef.current) return;
-    if (!force && lastRequestedCityRef.current === currentCity && (summary || loading)) return;
+    if (!force && lastRequestedCityRef.current === currentCity) return;
     
     setLoading(true);
     setError(null);
@@ -48,19 +46,18 @@ export function AIWeatherSummary({ weatherData }: Props) {
       const errorMsg = err?.message || String(err);
       if (errorMsg.includes('429') || errorMsg.includes('RESOURCE_EXHAUSTED') || errorMsg.includes('quota')) {
         setError('AI rate limit reached. Please wait a minute before retrying.');
+      } else if (errorMsg.includes('404') || errorMsg.includes('NOT_FOUND')) {
+        setError('The AI model is temporarily unavailable. Please try again in a few moments.');
       } else {
         setError('Unable to generate AI weather summary at this time.');
       }
-      // On error, we reset the lastRequestedCity so they can manually retry via the button
-      lastRequestedCityRef.current = null;
     } finally {
       setLoading(false);
       isRequestInFlightRef.current = false;
     }
-  }, [weatherData, summary, loading]);
+  }, [weatherData]);
 
   // Trigger generation when the component mounts or city changes.
-  // The key={cityName} on the parent dashboard ensures this component resets per city.
   useEffect(() => {
     generateSummary();
   }, [generateSummary]);
