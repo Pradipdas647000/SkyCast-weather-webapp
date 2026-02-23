@@ -8,6 +8,7 @@ import { HourlyChart } from './HourlyChart';
 import { DailyForecast } from './DailyForecast';
 import { WeatherDetails } from './WeatherDetails';
 import { CitySearch } from './CitySearch';
+import { RealTimeClock } from './RealTimeClock';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Sun, Moon, Thermometer, Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -119,11 +120,15 @@ export function WeatherDashboard() {
       <div className="container mx-auto p-4 md:p-8 space-y-8 max-w-7xl">
         {/* Header Section */}
         <header className="flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary rounded-2xl shadow-lg shadow-primary/20">
-              <Sun className="h-6 w-6 text-white" />
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-primary rounded-2xl shadow-lg shadow-primary/20">
+                <Sun className="h-6 w-6 text-white" />
+              </div>
+              <h1 className="text-2xl font-bold tracking-tight">ForecastAI</h1>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight">ForecastAI</h1>
+            <div className="hidden sm:block h-8 w-px bg-border" />
+            <RealTimeClock />
           </div>
           <div className="flex items-center gap-4 w-full md:w-auto">
             <CitySearch onSearch={handleSearch} onCurrentLocation={handleCurrentLocation} />
