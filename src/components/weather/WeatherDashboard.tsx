@@ -138,7 +138,8 @@ export function WeatherDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             <div className="lg:col-span-8 space-y-6">
               <CurrentWeatherCard data={weatherData.current} unit={unit} />
-              <AIWeatherSummary weatherData={weatherData} />
+              {/* Using city name as key to ensure complete component reset on city change */}
+              <AIWeatherSummary key={weatherData.current.cityName} weatherData={weatherData} />
               <div className="bg-card border rounded-3xl p-6 shadow-sm overflow-hidden">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="font-semibold text-lg flex items-center gap-2">

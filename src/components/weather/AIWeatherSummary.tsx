@@ -16,22 +16,16 @@ export function AIWeatherSummary({ weatherData }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Ref to track the city name we are currently processing or have finished processing
-  const lastAttemptedCityRef = useRef<string | null>(null);
+  // Track if we've already attempted or started a request for the current mount
+  const isStartedRef = useRef(false);
 
   const generateSummary = useCallback(async (force: boolean = false) => {
-    const currentCity = weatherData.current.cityName;
-
-    // Skip if we are already processing or have already tried/succeeded for this city
-    // (unless we are forcing a refresh via the retry button)
-    if (!force && currentCity === lastAttemptedCityRef.current) {
-      return;
-    }
-
+    // Basic guard to prevent concurrent requests or redundant ones
+    if (!force && isStartedRef.current) return;
+    
     setLoading(true);
     setError(null);
-    // Mark this city as attempted immediately to prevent concurrent or loop triggers
-    lastAttemptedCityRef.current = currentCity;
+    isStartedRef.current = true;
 
     try {
       const result = await aiWeatherSummary({
@@ -49,22 +43,17 @@ export function AIWeatherSummary({ weatherData }: Props) {
       } else {
         setError('Unable to generate AI weather summary at this time.');
       }
-      
-      // Note: We do NOT clear lastAttemptedCityRef here. 
-      // This is crucial to prevent the auto-retry loop on errors.
     } finally {
       setLoading(false);
     }
   }, [weatherData]);
 
-  // Trigger generation when the city changes
+  // Trigger generation on mount. 
+  // Since WeatherDashboard uses the cityName as a 'key', this component 
+  // remounts automatically whenever the city name changes.
   useEffect(() => {
-    // Only auto-trigger if the city is actually different from our last attempt
-    if (weatherData.current.cityName !== lastAttemptedCityRef.current) {
-      setSummary(null); // Clear old summary when city truly changes
-      generateSummary();
-    }
-  }, [weatherData.current.cityName, generateSummary]);
+    generateSummary();
+  }, [generateSummary]);
 
   return (
     <div className="bg-primary/5 border-primary/20 border-2 rounded-3xl p-6 relative overflow-hidden group">
