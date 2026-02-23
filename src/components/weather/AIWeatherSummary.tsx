@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -16,16 +17,23 @@ export function AIWeatherSummary({ weatherData }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Track if we've already attempted or started a request for the current mount
-  const isStartedRef = useRef(false);
+  // Track the city for which we've successfully initiated a request.
+  // This persists across re-renders within the same mount.
+  const lastRequestedCityRef = useRef<string | null>(null);
+  // Track if a request is currently in flight to prevent overlapping calls.
+  const isRequestInFlightRef = useRef(false);
 
   const generateSummary = useCallback(async (force: boolean = false) => {
-    // Basic guard to prevent concurrent requests or redundant ones
-    if (!force && isStartedRef.current) return;
+    const currentCity = weatherData.current.cityName;
+    
+    // Safety checks to prevent redundant API calls
+    if (!force && isRequestInFlightRef.current) return;
+    if (!force && lastRequestedCityRef.current === currentCity && (summary || loading)) return;
     
     setLoading(true);
     setError(null);
-    isStartedRef.current = true;
+    isRequestInFlightRef.current = true;
+    lastRequestedCityRef.current = currentCity;
 
     try {
       const result = await aiWeatherSummary({
@@ -39,18 +47,20 @@ export function AIWeatherSummary({ weatherData }: Props) {
       
       const errorMsg = err?.message || String(err);
       if (errorMsg.includes('429') || errorMsg.includes('RESOURCE_EXHAUSTED') || errorMsg.includes('quota')) {
-        setError('Gemini API rate limit reached. Please wait a moment and try again.');
+        setError('AI rate limit reached. Please wait a minute before retrying.');
       } else {
         setError('Unable to generate AI weather summary at this time.');
       }
+      // On error, we reset the lastRequestedCity so they can manually retry via the button
+      lastRequestedCityRef.current = null;
     } finally {
       setLoading(false);
+      isRequestInFlightRef.current = false;
     }
-  }, [weatherData]);
+  }, [weatherData, summary, loading]);
 
-  // Trigger generation on mount. 
-  // Since WeatherDashboard uses the cityName as a 'key', this component 
-  // remounts automatically whenever the city name changes.
+  // Trigger generation when the component mounts or city changes.
+  // The key={cityName} on the parent dashboard ensures this component resets per city.
   useEffect(() => {
     generateSummary();
   }, [generateSummary]);
@@ -129,7 +139,6 @@ export function AIWeatherSummary({ weatherData }: Props) {
         )}
       </div>
 
-      {/* Decorative background sparks */}
       <div className="absolute top-[-20%] right-[-5%] p-4 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity duration-700 pointer-events-none">
         <Sparkles className="h-48 w-48 text-primary" />
       </div>
