@@ -53,9 +53,14 @@ async function reverseGeocode(lat: number, lon: number): Promise<string> {
 /**
  * Helper to format ISO time strings to readable 12h format
  */
-function formatCelestialTime(isoString: string): string {
+function formatCelestialTime(isoString: string | undefined): string {
+  if (!isoString) return "N/A";
   try {
-    return new Date(isoString).toLocaleTimeString('en-US', { 
+    // Open-Meteo returns YYYY-MM-DDTHH:MM without TZ. We treat it as local.
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return "N/A";
+    
+    return date.toLocaleTimeString('en-US', { 
       hour: 'numeric', 
       minute: '2-digit', 
       hour12: true 
@@ -69,9 +74,10 @@ function formatCelestialTime(isoString: string): string {
  * Fetches full weather data for given coordinates.
  */
 async function getWeatherData(lat: number, lon: number, cityName: string): Promise<WeatherData> {
-  const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,surface_pressure,wind_speed_10m,is_day&hourly=temperature_2m,precipitation_probability,weather_code,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_probability_max&timezone=auto`;
+  // We include sunrise/sunset in the main forecast as it's more reliable
+  const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,surface_pressure,wind_speed_10m,is_day&hourly=temperature_2m,precipitation_probability,weather_code,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_probability_max,sunrise,sunset&timezone=auto`;
   const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=us_aqi`;
-  const astronomyUrl = `https://api.open-meteo.com/v1/astronomy?latitude=${lat}&longitude=${lon}&daily=sunrise,sunset,moonrise,moonset&timezone=auto`;
+  const astronomyUrl = `https://api.open-meteo.com/v1/astronomy?latitude=${lat}&longitude=${lon}&daily=moonrise,moonset&timezone=auto`;
 
   const [forecastRes, aqiRes, astronomyRes] = await Promise.all([
     fetch(forecastUrl, { next: { revalidate: 300 } }),
@@ -121,10 +127,10 @@ async function getWeatherData(lat: number, lon: number, cityName: string): Promi
   });
 
   const celestial: CelestialData = {
-    sunrise: astronomyData?.daily?.sunrise?.[0] ? formatCelestialTime(astronomyData.daily.sunrise[0]) : "N/A",
-    sunset: astronomyData?.daily?.sunset?.[0] ? formatCelestialTime(astronomyData.daily.sunset[0]) : "N/A",
-    moonrise: astronomyData?.daily?.moonrise?.[0] ? formatCelestialTime(astronomyData.daily.moonrise[0]) : "N/A",
-    moonset: astronomyData?.daily?.moonset?.[0] ? formatCelestialTime(astronomyData.daily.moonset[0]) : "N/A",
+    sunrise: formatCelestialTime(forecastData.daily.sunrise?.[0]),
+    sunset: formatCelestialTime(forecastData.daily.sunset?.[0]),
+    moonrise: formatCelestialTime(astronomyData?.daily?.moonrise?.[0]),
+    moonset: formatCelestialTime(astronomyData?.daily?.moonset?.[0]),
     moonPhase: "Moon Phase data N/A"
   };
 
