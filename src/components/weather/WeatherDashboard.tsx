@@ -9,7 +9,6 @@ import { DailyForecast } from './DailyForecast';
 import { WeatherDetails } from './WeatherDetails';
 import { CitySearch } from './CitySearch';
 import { RealTimeClock } from './RealTimeClock';
-import { AIWeatherSummary } from './AIWeatherSummary';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Sun, Moon, Thermometer, Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -185,7 +184,6 @@ export function WeatherDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             <div className="lg:col-span-8 space-y-8">
               <CurrentWeatherCard data={weatherData.current} unit={unit} />
-              <AIWeatherSummary weatherData={weatherData} />
               
               <div className="glass-card rounded-[2.5rem] p-8">
                 <div className="flex items-center justify-between mb-8">
