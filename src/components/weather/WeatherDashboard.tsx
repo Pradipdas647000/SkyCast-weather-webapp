@@ -92,7 +92,7 @@ export function WeatherDashboard() {
   };
 
   const getBackgroundInfo = () => {
-    if (!weatherData) return null;
+    if (!weatherData) return { image: PlaceHolderImages.find(img => img.id === 'clear-sky'), effect: null };
     const condition = weatherData.current.condition;
     
     if (condition === 'clear') {
@@ -144,10 +144,10 @@ export function WeatherDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground transition-all duration-500 relative overflow-hidden flex flex-col">
+    <div className="min-h-screen text-foreground transition-all duration-500 relative overflow-hidden flex flex-col">
       {/* Dynamic Weather Background Layer */}
       {bgInfo && bgInfo.image && (
-        <div className="weather-bg-container fixed inset-0 pointer-events-none -z-20">
+        <div className="weather-bg-container fixed inset-0 pointer-events-none -z-50">
           <Image 
             src={bgInfo.image.imageUrl} 
             alt={bgInfo.image.description}
@@ -158,7 +158,7 @@ export function WeatherDashboard() {
           />
           {bgInfo.effect && <div className={`${bgInfo.effect} fixed inset-0 z-10 pointer-events-none opacity-50`} />}
           {/* Overlay to ensure readability */}
-          <div className="absolute inset-0 bg-white/10 dark:bg-black/30 backdrop-blur-[2px] z-0" />
+          <div className="absolute inset-0 bg-white/10 dark:bg-black/30 backdrop-blur-[1px] z-0" />
         </div>
       )}
 
