@@ -2,26 +2,26 @@
   "placeholderImages": [
     {
       "id": "clear-sky",
-      "description": "Clear blue sky with bright sun",
-      "imageUrl": "https://images.unsplash.com/photo-1708454089813-e73e923f15f2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxjbGVhciUyMHNreXxlbnwwfHx8fDE3NzIwMjQ1Nzd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "description": "Clear bright blue sky with sun",
+      "imageUrl": "https://images.unsplash.com/photo-1541734091135-d4a3c6235ed8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxjbGVhciUyMHNreXxlbnwwfHx8fDE3NzIwMjQ1Nzd8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "clear sky"
     },
     {
       "id": "cloudy-sky",
-      "description": "Overcast sky with many clouds",
-      "imageUrl": "https://images.unsplash.com/photo-1534088568595-a066f410bcda?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxjbG91ZHklMjBza3l8ZW58MHx8fHwxNzcyMDI0NTc3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "description": "Dramatic clouds in the sky",
+      "imageUrl": "https://images.unsplash.com/photo-1612297728955-a0ad12a75df9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxjbG91ZHklMjBza3l8ZW58MHx8fHwxNzcyMDI0NTc3fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "cloudy sky"
     },
     {
       "id": "rainy-sky",
-      "description": "Rainy weather with dark clouds",
-      "imageUrl": "https://images.unsplash.com/photo-1594652010347-788d009508c3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxyYWlueSUyMHNreXxlbnwwfHx8fDE3NzIwMjQ1Nzd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "description": "Rainy city street and grey sky",
+      "imageUrl": "https://images.unsplash.com/photo-1534088568595-a066f410bcda?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxyYWlueSUyMHNreXxlbnwwfHx8fDE3NzIwMjQ1Nzd8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "rainy sky"
     },
     {
       "id": "snowy-sky",
-      "description": "Snowy landscape with white clouds",
-      "imageUrl": "https://images.unsplash.com/photo-1611923302073-9acc92ff9f99?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxzbm93eSUyMHNreXxlbnwwfHx8fDE3NzIwMjQ1Nzd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "description": "Beautiful snowy mountain landscape",
+      "imageUrl": "https://images.unsplash.com/photo-1542213598-338d614544f8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxzbm93eSUyMHNreXxlbnwwfHx8fDE3NzIwMjQ1Nzd8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "snowy sky"
     }
   ]
