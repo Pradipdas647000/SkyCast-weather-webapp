@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -45,6 +44,7 @@ export function WeatherDashboard() {
   }, []);
 
   const handleCurrentLocation = useCallback(() => {
+    if (typeof window === 'undefined') return;
     if (!("geolocation" in navigator)) {
       setError("Geolocation is not supported by your browser.");
       loadWeather();
