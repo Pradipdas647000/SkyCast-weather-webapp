@@ -108,12 +108,12 @@ export function WeatherDashboard() {
     } else if (['rain', 'drizzle'].includes(condition)) {
       return { 
         image: PlaceHolderImages.find(img => img.id === 'rainy-sky'),
-        effect: 'effect-rain'
+        effect: null // Removed effect-rain to stop flickering
       };
     } else if (condition === 'thunderstorm') {
       return { 
         image: PlaceHolderImages.find(img => img.id === 'rainy-sky'),
-        effect: 'effect-rain effect-lightning'
+        effect: null // Removed effect-rain and effect-lightning to stop flickering
       };
     } else if (condition === 'snow') {
       return { 
