@@ -66,6 +66,12 @@ async function getWeatherData(lat: number, lon: number, cityName: string): Promi
   const current = forecastData.current;
   const { condition, description } = mapWmoCode(current.weather_code);
 
+  // Find the index for visibility that matches current time
+  const currentIndex = forecastData.hourly.time.indexOf(current.time);
+  const currentVisibility = currentIndex !== -1 
+    ? (forecastData.hourly.visibility[currentIndex] || 10000) 
+    : (forecastData.hourly.visibility[0] || 10000);
+
   const daily: DailyForecastItem[] = forecastData.daily.time.map((time: string, i: number) => {
     const dayCode = forecastData.daily.weather_code[i];
     const dayInfo = mapWmoCode(dayCode);
@@ -102,7 +108,7 @@ async function getWeatherData(lat: number, lon: number, cityName: string): Promi
     uvi: Math.round(forecastData.daily.uv_index_max[0]),
     aqi: Math.round(aqiData.current.us_aqi || 0),
     pressure: Math.round(current.surface_pressure),
-    visibility: Math.round((forecastData.hourly.visibility[0] || 10000) / 1000),
+    visibility: Math.round(currentVisibility / 1000),
     isDay: current.is_day === 1
   };
 
