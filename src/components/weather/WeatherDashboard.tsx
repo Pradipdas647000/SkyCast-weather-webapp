@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -13,6 +14,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Sun, Moon, Thermometer, Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+import Image from 'next/image';
 
 export function WeatherDashboard() {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
@@ -88,6 +91,40 @@ export function WeatherDashboard() {
     setTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
 
+  const getBackgroundInfo = () => {
+    if (!weatherData) return null;
+    const condition = weatherData.current.condition;
+    
+    if (condition === 'clear') {
+      return { 
+        image: PlaceHolderImages.find(img => img.id === 'clear-sky'),
+        effect: null
+      };
+    } else if (['clouds', 'mist'].includes(condition)) {
+      return { 
+        image: PlaceHolderImages.find(img => img.id === 'cloudy-sky'),
+        effect: 'effect-clouds'
+      };
+    } else if (['rain', 'drizzle', 'thunderstorm'].includes(condition)) {
+      return { 
+        image: PlaceHolderImages.find(img => img.id === 'rainy-sky'),
+        effect: 'effect-rain'
+      };
+    } else if (condition === 'snow') {
+      return { 
+        image: PlaceHolderImages.find(img => img.id === 'snowy-sky'),
+        effect: 'effect-snow'
+      };
+    }
+    
+    return { 
+      image: PlaceHolderImages.find(img => img.id === 'clear-sky'),
+      effect: null
+    };
+  };
+
+  const bgInfo = getBackgroundInfo();
+
   if (loading && !weatherData) {
     return (
       <div className="container mx-auto p-4 space-y-8">
@@ -103,30 +140,36 @@ export function WeatherDashboard() {
           <Skeleton className="h-80 lg:col-span-2 rounded-[2.5rem]" />
           <Skeleton className="h-80 rounded-3xl" />
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-8">
-             <Skeleton className="h-64 rounded-3xl" />
-          </div>
-          <div className="lg:col-span-4">
-             <Skeleton className="h-96 rounded-3xl" />
-          </div>
-        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-all duration-500 relative overflow-hidden">
-      {/* Background Atmosphere Effects */}
+      {/* Dynamic Weather Background */}
+      {bgInfo && bgInfo.image && (
+        <div className="weather-bg-container">
+          <Image 
+            src={bgInfo.image.imageUrl} 
+            alt={bgInfo.image.description}
+            fill
+            className="weather-bg-image"
+            priority
+            data-ai-hint={bgInfo.image.imageHint}
+          />
+          {bgInfo.effect && <div className={bgInfo.effect} />}
+        </div>
+      )}
+
+      {/* Atmospheric Glow Overlay */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
-        <div className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-primary/10 dark:bg-primary/5 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute top-[20%] -right-[10%] w-[40%] h-[40%] bg-accent/10 dark:bg-accent/5 rounded-full blur-[100px]" />
-        <div className="absolute -bottom-[10%] left-[20%] w-[30%] h-[30%] bg-blue-500/5 rounded-full blur-[80px]" />
+        <div className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-primary/20 dark:bg-primary/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent/20 dark:bg-accent/10 rounded-full blur-[100px]" />
       </div>
 
       <div className="container mx-auto p-4 md:p-8 space-y-8 max-w-7xl relative z-10">
         {/* Header Section */}
-        <header className="flex flex-col md:flex-row gap-4 items-center justify-between">
+        <header className="flex flex-col md:flex-row gap-4 items-center justify-between glass-card p-4 rounded-3xl mb-4">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-primary rounded-2xl shadow-lg shadow-primary/20">
@@ -134,7 +177,7 @@ export function WeatherDashboard() {
               </div>
               <h1 className="text-2xl font-bold tracking-tight">ForecastAI</h1>
             </div>
-            <div className="hidden sm:block h-8 w-px bg-border" />
+            <div className="hidden sm:block h-8 w-px bg-white/20" />
             <RealTimeClock />
           </div>
           <div className="flex items-center gap-4 w-full md:w-auto">
@@ -178,7 +221,7 @@ export function WeatherDashboard() {
             <div className="lg:col-span-8 space-y-6">
               <CurrentWeatherCard data={weatherData.current} unit={unit} />
               
-              <div className="bg-card/50 backdrop-blur-md border rounded-3xl p-6 shadow-sm overflow-hidden">
+              <div className="glass-card rounded-3xl p-6 overflow-hidden">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="font-semibold text-lg flex items-center gap-2">
                     <Thermometer className="h-5 w-5 text-primary" />

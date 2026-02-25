@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -62,20 +63,47 @@
   }
 }
 
-.weather-gradient-clear {
-  background: linear-gradient(to bottom, #4facfe 0%, #00f2fe 100%);
+.weather-bg-container {
+  @apply fixed inset-0 w-full h-full -z-20 overflow-hidden pointer-events-none;
 }
 
-.weather-gradient-clouds {
-  background: linear-gradient(to bottom, #bdc3c7 0%, #2c3e50 100%);
+.weather-bg-image {
+  @apply absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 brightness-[0.7] dark:brightness-[0.4];
 }
 
-.weather-gradient-rain {
-  background: linear-gradient(to bottom, #4b6cb7 0%, #182848 100%);
+/* Live Effects */
+.effect-rain {
+  background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 100%);
+  @apply absolute inset-0 w-full h-full;
+  animation: rain 0.2s linear infinite;
 }
 
-.weather-gradient-snow {
-  background: linear-gradient(to bottom, #e6e9f0 0%, #eef1f5 100%);
+.effect-clouds {
+  @apply absolute inset-0 w-[200%] h-full opacity-20;
+  background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+  animation: move-clouds 60s linear infinite;
+}
+
+.effect-snow {
+  @apply absolute inset-0 w-full h-full;
+  background-image: radial-gradient(circle at center, white 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: snow 10s linear infinite;
+}
+
+@keyframes rain {
+  from { background-position: 0 0; }
+  to { background-position: 10px 100px; }
+}
+
+@keyframes move-clouds {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes snow {
+  from { background-position: 0 0; }
+  to { background-position: 50px 500px; }
 }
 
 .glass-card {
