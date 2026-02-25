@@ -24,8 +24,11 @@ export function DailyForecast({ data, unit }: Props) {
   const formatTemp = (val: number) => unit === 'F' ? Math.round((val * 9/5) + 32) : Math.round(val);
 
   return (
-    <div className="bg-card border rounded-3xl p-6 shadow-sm">
-      <h3 className="font-semibold text-lg mb-6">7-Day Forecast</h3>
+    <div className="glass-card border-white/30 rounded-3xl p-6 shadow-2xl glass-card-hover">
+      <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
+        <Sun className="h-5 w-5 text-primary" />
+        7-Day Forecast
+      </h3>
       <div className="space-y-5">
         {data.map((day, idx) => (
           <motion.div 
@@ -33,11 +36,11 @@ export function DailyForecast({ data, unit }: Props) {
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: idx * 0.1 }}
-            className="flex items-center justify-between"
+            className="flex items-center justify-between group"
           >
-            <span className="w-12 font-medium">{day.date}</span>
+            <span className="w-12 font-bold group-hover:text-primary transition-colors">{day.date}</span>
             <div className="flex items-center gap-3 flex-1 px-4">
-              <div className="p-2 bg-accent/10 rounded-xl">
+              <div className="p-2 bg-white/10 dark:bg-black/10 rounded-xl group-hover:bg-white/20 transition-all">
                 {getIcon(day.condition)}
               </div>
               <div className="flex flex-col">
@@ -49,9 +52,9 @@ export function DailyForecast({ data, unit }: Props) {
                 )}
               </div>
             </div>
-            <div className="flex gap-3 text-sm font-bold">
+            <div className="flex gap-3 text-sm font-black">
               <span className="w-8 text-right">{formatTemp(day.maxTemp)}°</span>
-              <span className="w-8 text-right text-muted-foreground">{formatTemp(day.minTemp)}°</span>
+              <span className="w-8 text-right text-muted-foreground opacity-70">{formatTemp(day.minTemp)}°</span>
             </div>
           </motion.div>
         ))}

@@ -23,7 +23,6 @@ export function WeatherDashboard() {
   const [unit, setUnit] = useState<'C' | 'F'>('C');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
-  // Handle theme switching
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark');
@@ -61,7 +60,7 @@ export function WeatherDashboard() {
           setWeatherData(data);
         } catch (err) {
           setError('Failed to fetch weather for your location.');
-          loadWeather(); // Fallback to default
+          loadWeather();
         } finally {
           setLoading(false);
         }
@@ -96,36 +95,15 @@ export function WeatherDashboard() {
     const condition = weatherData.current.condition;
     
     if (condition === 'clear') {
-      return { 
-        image: PlaceHolderImages.find(img => img.id === 'clear-sky'),
-        effect: null
-      };
+      return { image: PlaceHolderImages.find(img => img.id === 'clear-sky'), effect: null };
     } else if (['clouds', 'mist'].includes(condition)) {
-      return { 
-        image: PlaceHolderImages.find(img => img.id === 'cloudy-sky'),
-        effect: 'effect-clouds'
-      };
-    } else if (['rain', 'drizzle'].includes(condition)) {
-      return { 
-        image: PlaceHolderImages.find(img => img.id === 'rainy-sky'),
-        effect: null // Removed effect-rain to stop flickering
-      };
-    } else if (condition === 'thunderstorm') {
-      return { 
-        image: PlaceHolderImages.find(img => img.id === 'rainy-sky'),
-        effect: null // Removed effect-rain and effect-lightning to stop flickering
-      };
+      return { image: PlaceHolderImages.find(img => img.id === 'cloudy-sky'), effect: 'effect-clouds' };
+    } else if (['rain', 'drizzle', 'thunderstorm'].includes(condition)) {
+      return { image: PlaceHolderImages.find(img => img.id === 'rainy-sky'), effect: null };
     } else if (condition === 'snow') {
-      return { 
-        image: PlaceHolderImages.find(img => img.id === 'snowy-sky'),
-        effect: 'effect-snow'
-      };
+      return { image: PlaceHolderImages.find(img => img.id === 'snowy-sky'), effect: 'effect-snow' };
     }
-    
-    return { 
-      image: PlaceHolderImages.find(img => img.id === 'clear-sky'),
-      effect: null
-    };
+    return { image: PlaceHolderImages.find(img => img.id === 'clear-sky'), effect: null };
   };
 
   const bgInfo = getBackgroundInfo();
@@ -150,7 +128,6 @@ export function WeatherDashboard() {
 
   return (
     <div className="min-h-screen text-foreground transition-all duration-500 relative overflow-hidden flex flex-col">
-      {/* Dynamic Weather Background Layer */}
       {bgInfo && bgInfo.image && (
         <div className="weather-bg-container fixed inset-0 pointer-events-none -z-50">
           <Image 
@@ -161,23 +138,13 @@ export function WeatherDashboard() {
             priority
             data-ai-hint={bgInfo.image.imageHint}
           />
-          {bgInfo.effect && (
-            <div className={`fixed inset-0 z-10 pointer-events-none ${bgInfo.effect}`} />
-          )}
-          {/* Overlay to ensure readability and atmospheric tone */}
-          <div className="absolute inset-0 bg-white/20 dark:bg-black/40 backdrop-blur-[2px] z-0" />
+          {bgInfo.effect && <div className={`fixed inset-0 z-10 pointer-events-none ${bgInfo.effect}`} />}
+          <div className="absolute inset-0 bg-white/10 dark:bg-black/20 backdrop-blur-[1px] z-0" />
         </div>
       )}
 
-      {/* Atmospheric Glow Overlay */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-        <div className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] bg-primary/20 dark:bg-primary/10 rounded-full blur-[140px]" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-accent/20 dark:bg-accent/10 rounded-full blur-[120px]" />
-      </div>
-
       <div className="container mx-auto p-4 md:p-10 space-y-8 max-w-7xl relative z-10 flex-1">
-        {/* Header Section */}
-        <header className="flex flex-col md:flex-row gap-6 items-center justify-between glass-card p-5 rounded-[2rem]">
+        <header className="flex flex-col md:flex-row gap-6 items-center justify-between glass-card p-5 rounded-[2rem] shadow-2xl">
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-primary rounded-2xl shadow-xl shadow-primary/30">
@@ -198,7 +165,7 @@ export function WeatherDashboard() {
                 variant="outline"
                 size="icon"
                 onClick={toggleTheme}
-                className="h-12 w-12 rounded-2xl glass-card hover:bg-white/60 transition-all shadow-lg"
+                className="h-12 w-12 rounded-2xl glass-card hover:bg-white/40 transition-all shadow-lg border-white/30"
                 title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
               >
                 {theme === 'light' ? (
@@ -209,7 +176,7 @@ export function WeatherDashboard() {
               </Button>
               <button
                 onClick={toggleUnit}
-                className="px-5 py-2 h-12 glass-card rounded-2xl font-bold hover:bg-white/60 transition-all shadow-lg text-lg min-w-[60px]"
+                className="px-5 py-2 h-12 glass-card rounded-2xl font-bold hover:bg-white/40 transition-all shadow-lg text-lg min-w-[60px] border-white/30"
               >
                 °{unit}
               </button>
@@ -218,20 +185,19 @@ export function WeatherDashboard() {
         </header>
 
         {error && (
-          <Alert variant="destructive" className="rounded-3xl shadow-xl border-destructive/30 bg-destructive/10 backdrop-blur-xl animate-in fade-in slide-in-from-top-4">
+          <Alert variant="destructive" className="rounded-3xl shadow-xl border-destructive/30 bg-destructive/10 backdrop-blur-xl">
             <Info className="h-5 w-5" />
             <AlertTitle className="font-bold">Weather Notice</AlertTitle>
             <AlertDescription className="text-sm font-medium">{error}</AlertDescription>
           </Alert>
         )}
 
-        {/* Dashboard Content */}
         {weatherData && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             <div className="lg:col-span-8 space-y-8">
               <CurrentWeatherCard data={weatherData.current} unit={unit} />
               
-              <div className="glass-card rounded-[2.5rem] p-8 overflow-hidden">
+              <div className="glass-card rounded-[2.5rem] p-8">
                 <div className="flex items-center justify-between mb-8">
                   <h3 className="font-bold text-xl flex items-center gap-3">
                     <div className="p-2 bg-primary/20 rounded-xl">

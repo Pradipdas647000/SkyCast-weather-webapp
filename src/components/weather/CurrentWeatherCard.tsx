@@ -31,25 +31,12 @@ export function CurrentWeatherCard({ data, unit }: Props) {
     }
   };
 
-  const getGradientClass = () => {
-    switch (data.condition) {
-      case 'clear': return 'from-blue-400/10 to-cyan-300/10';
-      case 'clouds': return 'from-slate-400/10 to-slate-500/10';
-      case 'rain': return 'from-blue-600/10 to-blue-800/10';
-      case 'thunderstorm': return 'from-indigo-900/10 to-blue-900/10';
-      case 'snow': return 'from-blue-100/10 to-slate-200/10';
-      default: return 'from-blue-400/10 to-cyan-300/10';
-    }
-  };
-
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`relative overflow-hidden glass-card rounded-[2.5rem] p-8 md:p-10 shadow-2xl`}
+      className="relative overflow-hidden glass-card rounded-[2.5rem] p-8 md:p-10 shadow-2xl glass-card-hover"
     >
-      <div className={`absolute inset-0 bg-gradient-to-br ${getGradientClass()} pointer-events-none opacity-50`} />
-      
       <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
         <div className="space-y-4">
           <div>
@@ -58,22 +45,22 @@ export function CurrentWeatherCard({ data, unit }: Props) {
               <h2 className="text-4xl md:text-5xl font-bold tracking-tight">{mainTitle}</h2>
             </div>
             {citySubName && (
-              <p className="text-xl font-medium text-primary mb-2 opacity-80">{citySubName}</p>
+              <p className="text-xl font-medium text-primary mb-2 opacity-90">{citySubName}</p>
             )}
             <p className="text-muted-foreground text-lg">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
           </div>
           
           <div className="flex items-baseline gap-2">
             <span className="text-7xl md:text-8xl font-black tracking-tighter">{temp}°</span>
-            <span className="text-3xl font-medium text-muted-foreground">/ {feelsLike}° feels like</span>
+            <span className="text-3xl font-medium text-muted-foreground opacity-80">/ {feelsLike}° feels like</span>
           </div>
 
           <div className="flex flex-wrap gap-4 pt-2">
-            <div className="flex items-center gap-2 bg-primary/10 backdrop-blur-md px-4 py-2 rounded-2xl">
+            <div className="flex items-center gap-2 bg-white/20 dark:bg-black/20 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20">
               <Wind className="h-5 w-5 text-primary" />
               <span className="font-semibold">{data.windSpeed} km/h</span>
             </div>
-            <div className="flex items-center gap-2 bg-blue-500/10 backdrop-blur-md px-4 py-2 rounded-2xl">
+            <div className="flex items-center gap-2 bg-white/20 dark:bg-black/20 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20">
               <Droplets className="h-5 w-5 text-blue-500" />
               <span className="font-semibold">{data.humidity}%</span>
             </div>
