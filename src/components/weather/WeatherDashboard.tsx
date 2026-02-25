@@ -9,6 +9,7 @@ import { DailyForecast } from './DailyForecast';
 import { WeatherDetails } from './WeatherDetails';
 import { CitySearch } from './CitySearch';
 import { RealTimeClock } from './RealTimeClock';
+import { CelestialInfo } from './CelestialInfo';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Sun, Moon, Thermometer, Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -143,7 +144,7 @@ export function WeatherDashboard() {
               <div className="p-3 bg-primary/20 backdrop-blur-xl rounded-2xl">
                 <Sun className="h-7 w-7 text-primary" />
               </div>
-              <h1 className="text-3xl font-black tracking-tighter text-primary">ForecastAI</h1>
+              <h1 className="text-3xl font-black tracking-tighter text-primary">SkyCast</h1>
             </div>
             <div className="hidden lg:block h-10 w-px bg-white/10" />
             <RealTimeClock />
@@ -196,6 +197,8 @@ export function WeatherDashboard() {
                   <HourlyChart data={weatherData.hourly} unit={unit} />
                 </div>
               </div>
+
+              <CelestialInfo data={weatherData.celestial} />
             </div>
             
             <div className="lg:col-span-4 space-y-8">

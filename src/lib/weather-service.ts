@@ -1,10 +1,9 @@
 'use server';
 
-import { WeatherData, CurrentWeather, DailyForecastItem, HourlyForecastItem } from './weather-types';
+import { WeatherData, CurrentWeather, DailyForecastItem, HourlyForecastItem, CelestialData } from './weather-types';
 
 /**
  * Maps WMO Weather interpretation codes (WW) to app-specific conditions.
- * https://open-meteo.com/en/docs
  */
 function mapWmoCode(code: number): { condition: CurrentWeather['condition']; description: string } {
   if (code === 0) return { condition: 'clear', description: 'Clear sky' };
@@ -19,11 +18,27 @@ function mapWmoCode(code: number): { condition: CurrentWeather['condition']; des
 }
 
 /**
+ * Maps moon phase value to readable description
+ */
+function getMoonPhase(phase: number): string {
+  if (phase === 0 || phase === 1) return 'New Moon';
+  if (phase > 0 && phase < 0.25) return 'Waxing Crescent';
+  if (phase === 0.25) return 'First Quarter';
+  if (phase > 0.25 && phase < 0.5) return 'Waxing Gibbous';
+  if (phase === 0.5) return 'Full Moon';
+  if (phase > 0.5 && phase < 0.75) return 'Waning Gibbous';
+  if (phase === 0.75) return 'Last Quarter';
+  if (phase > 0.75 && phase < 1) return 'Waning Crescent';
+  return 'Unknown';
+}
+
+/**
  * Fetches coordinates for a city name using Open-Meteo Geocoding API.
  */
 async function getCoordinates(city: string) {
   const response = await fetch(
-    `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`
+    `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`,
+    { next: { revalidate: 3600 } }
   );
   const data = await response.json();
   if (!data.results || data.results.length === 0) {
@@ -38,8 +53,10 @@ async function getCoordinates(city: string) {
 async function reverseGeocode(lat: number, lon: number): Promise<string> {
   try {
     const response = await fetch(
-      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`,
+      { next: { revalidate: 3600 } }
     );
+    if (!response.ok) return "";
     const data = await response.json();
     return data.city || data.locality || data.principalSubdivision || "";
   } catch (error) {
@@ -52,21 +69,25 @@ async function reverseGeocode(lat: number, lon: number): Promise<string> {
  * Fetches full weather data for given coordinates.
  */
 async function getWeatherData(lat: number, lon: number, cityName: string): Promise<WeatherData> {
-  const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,surface_pressure,wind_speed_10m,is_day&hourly=temperature_2m,precipitation_probability,weather_code,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_probability_max&timezone=auto`;
+  const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,surface_pressure,wind_speed_10m,is_day&hourly=temperature_2m,precipitation_probability,weather_code,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_probability_max,sunrise,sunset&timezone=auto`;
   const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=us_aqi`;
+  const astronomyUrl = `https://api.open-meteo.com/v1/astronomy?latitude=${lat}&longitude=${lon}&daily=sunrise,sunset,moonrise,moonset&timezone=auto`;
 
-  const [forecastRes, aqiRes] = await Promise.all([
-    fetch(forecastUrl),
-    fetch(aqiUrl)
+  const [forecastRes, aqiRes, astronomyRes] = await Promise.all([
+    fetch(forecastUrl, { next: { revalidate: 300 } }),
+    fetch(aqiUrl, { next: { revalidate: 300 } }),
+    fetch(astronomyUrl, { next: { revalidate: 3600 } })
   ]);
 
+  if (!forecastRes.ok) throw new Error('Forecast API failed');
+  
   const forecastData = await forecastRes.json();
-  const aqiData = await aqiRes.json();
+  const aqiData = aqiRes.ok ? await aqiRes.json() : { current: { us_aqi: 0 } };
+  const astronomyData = astronomyRes.ok ? await astronomyRes.json() : null;
 
   const current = forecastData.current;
   const { condition, description } = mapWmoCode(current.weather_code);
 
-  // Find the index for visibility that matches current time
   const currentIndex = forecastData.hourly.time.indexOf(current.time);
   const currentVisibility = currentIndex !== -1 
     ? (forecastData.hourly.visibility[currentIndex] || 10000) 
@@ -97,6 +118,14 @@ async function getWeatherData(lat: number, lon: number, cityName: string): Promi
     };
   });
 
+  const celestial: CelestialData = {
+    sunrise: astronomyData?.daily?.sunrise?.[0] ? new Date(astronomyData.daily.sunrise[0]).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : "N/A",
+    sunset: astronomyData?.daily?.sunset?.[0] ? new Date(astronomyData.daily.sunset[0]).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : "N/A",
+    moonrise: astronomyData?.daily?.moonrise?.[0] ? new Date(astronomyData.daily.moonrise[0]).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : "N/A",
+    moonset: astronomyData?.daily?.moonset?.[0] ? new Date(astronomyData.daily.moonset[0]).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : "N/A",
+    moonPhase: "Moon Phase data N/A" // Simplified as Open-Meteo doesn't provide direct string phase in simple daily astronomy
+  };
+
   const currentWeather: CurrentWeather = {
     cityName,
     temperature: Math.round(current.temperature_2m),
@@ -115,7 +144,8 @@ async function getWeatherData(lat: number, lon: number, cityName: string): Promi
   return {
     current: currentWeather,
     daily,
-    hourly
+    hourly,
+    celestial
   };
 }
 

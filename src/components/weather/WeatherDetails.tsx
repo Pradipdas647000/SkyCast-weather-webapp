@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CurrentWeather } from '@/lib/weather-types';
-import { Wind, Droplets, Sun, Eye, Navigation, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { Wind, Droplets, Sun, Eye, ShieldCheck } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 
 interface Props {

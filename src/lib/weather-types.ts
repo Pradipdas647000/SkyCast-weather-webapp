@@ -30,8 +30,17 @@ export interface HourlyForecastItem {
   precipitationChance: number;
 }
 
+export interface CelestialData {
+  sunrise: string;
+  sunset: string;
+  moonrise: string;
+  moonset: string;
+  moonPhase: string;
+}
+
 export interface WeatherData {
   current: CurrentWeather;
   daily: DailyForecastItem[];
   hourly: HourlyForecastItem[];
+  celestial: CelestialData;
 }

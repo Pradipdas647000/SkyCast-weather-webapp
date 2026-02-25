@@ -2,8 +2,8 @@ import type {Metadata} from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'ForecastAI - Advanced Weather Intelligence',
-  description: 'AI-powered weather forecasting with interactive charts and severe weather alerts.',
+  title: 'SkyCast - Advanced Weather Intelligence',
+  description: 'AI-powered weather forecasting with interactive charts and celestial insights.',
 };
 
 export default function RootLayout({
