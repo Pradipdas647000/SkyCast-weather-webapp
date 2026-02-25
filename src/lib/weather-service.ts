@@ -45,7 +45,6 @@ async function reverseGeocode(lat: number, lon: number): Promise<string> {
     const data = await response.json();
     return data.city || data.locality || data.principalSubdivision || "";
   } catch (error) {
-    console.error('Reverse geocoding failed:', error);
     return "";
   }
 }
@@ -53,27 +52,27 @@ async function reverseGeocode(lat: number, lon: number): Promise<string> {
 /**
  * Helper to format ISO time strings to readable 12h format
  */
-function formatCelestialTime(isoString: string | undefined): string {
-  if (!isoString) return "N/A";
+function formatCelestialTime(isoString: string | null | undefined): string {
+  if (!isoString) return "--:--";
   try {
-    // Open-Meteo returns YYYY-MM-DDTHH:MM without TZ. We treat it as local.
-    // To ensure reliable parsing across environments, we split the string.
+    // Open-Meteo returns YYYY-MM-DDTHH:MM
     const parts = isoString.split('T');
-    if (parts.length < 2) return "N/A";
+    if (parts.length < 2) return "--:--";
     
     const timePart = parts[1]; // HH:MM
     const [hours, minutes] = timePart.split(':');
     const h = parseInt(hours, 10);
     const m = parseInt(minutes, 10);
     
+    if (isNaN(h) || isNaN(m)) return "--:--";
+
     const ampm = h >= 12 ? 'PM' : 'AM';
     const h12 = h % 12 || 12;
     const mStr = m.toString().padStart(2, '0');
     
     return `${h12}:${mStr} ${ampm}`;
   } catch (e) {
-    console.error('Error formatting celestial time:', e);
-    return "N/A";
+    return "--:--";
   }
 }
 
@@ -167,7 +166,6 @@ export async function fetchWeather(city: string): Promise<WeatherData> {
     const location = await getCoordinates(city);
     return await getWeatherData(location.latitude, location.longitude, location.name);
   } catch (error) {
-    console.error('Error fetching weather:', error);
     throw error;
   }
 }
@@ -178,7 +176,6 @@ export async function fetchWeatherByCoords(lat: number, lon: number): Promise<We
     const displayName = cityName ? `Your Location (${cityName})` : "Your Location";
     return await getWeatherData(lat, lon, displayName);
   } catch (error) {
-    console.error('Error fetching weather by coords:', error);
     throw error;
   }
 }

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CelestialData } from '@/lib/weather-types';
-import { Sunrise, Sunset, Moon, Sparkles } from 'lucide-react';
+import { Sunrise, Sunset, Moon } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface Props {
