@@ -9,6 +9,7 @@ import { DailyForecast } from './DailyForecast';
 import { WeatherDetails } from './WeatherDetails';
 import { CitySearch } from './CitySearch';
 import { RealTimeClock } from './RealTimeClock';
+import { AIWeatherSummary } from './AIWeatherSummary';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Sun, Moon, Thermometer, Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -91,33 +92,27 @@ export function WeatherDashboard() {
   };
 
   const getBackgroundInfo = () => {
-    if (!weatherData) return { image: PlaceHolderImages.find(img => img.id === 'clear-sky'), effect: null };
-    const condition = weatherData.current.condition;
+    if (!weatherData) return PlaceHolderImages.find(img => img.id === 'clear-day');
+    const { condition, isDay } = weatherData.current;
     
     if (condition === 'clear') {
-      return { image: PlaceHolderImages.find(img => img.id === 'clear-sky'), effect: null };
+      return PlaceHolderImages.find(img => img.id === (isDay ? 'clear-day' : 'clear-night'));
     } else if (['clouds', 'mist'].includes(condition)) {
-      return { image: PlaceHolderImages.find(img => img.id === 'cloudy-sky'), effect: 'effect-clouds' };
+      return PlaceHolderImages.find(img => img.id === (isDay ? 'cloudy-day' : 'cloudy-night'));
     } else if (['rain', 'drizzle', 'thunderstorm'].includes(condition)) {
-      return { image: PlaceHolderImages.find(img => img.id === 'rainy-sky'), effect: null };
+      return PlaceHolderImages.find(img => img.id === (isDay ? 'rainy-day' : 'rainy-night'));
     } else if (condition === 'snow') {
-      return { image: PlaceHolderImages.find(img => img.id === 'snowy-sky'), effect: 'effect-snow' };
+      return PlaceHolderImages.find(img => img.id === (isDay ? 'snowy-day' : 'snowy-night'));
     }
-    return { image: PlaceHolderImages.find(img => img.id === 'clear-sky'), effect: null };
+    return PlaceHolderImages.find(img => img.id === (isDay ? 'clear-day' : 'clear-night'));
   };
 
-  const bgInfo = getBackgroundInfo();
+  const bgImage = getBackgroundInfo();
 
   if (loading && !weatherData) {
     return (
       <div className="container mx-auto p-4 space-y-8 min-h-screen flex flex-col justify-center">
-        <div className="flex justify-between items-center mb-12">
-          <Skeleton className="h-12 w-48 rounded-2xl" />
-          <div className="flex gap-4">
-            <Skeleton className="h-12 w-64 rounded-2xl" />
-            <Skeleton className="h-12 w-12 rounded-2xl" />
-          </div>
-        </div>
+        <Skeleton className="h-16 w-full rounded-2xl" />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <Skeleton className="h-96 lg:col-span-2 rounded-[2.5rem]" />
           <Skeleton className="h-96 rounded-[2.5rem]" />
@@ -128,55 +123,49 @@ export function WeatherDashboard() {
 
   return (
     <div className="min-h-screen text-foreground transition-all duration-500 relative overflow-hidden flex flex-col">
-      {bgInfo && bgInfo.image && (
+      {bgImage && (
         <div className="weather-bg-container fixed inset-0 pointer-events-none -z-50">
           <Image 
-            src={bgInfo.image.imageUrl} 
-            alt={bgInfo.image.description}
+            src={bgImage.imageUrl} 
+            alt={bgImage.description}
             fill
             className="weather-bg-image object-cover scale-105"
             priority
-            data-ai-hint={bgInfo.image.imageHint}
+            data-ai-hint={bgImage.imageHint}
           />
-          {bgInfo.effect && <div className={`fixed inset-0 z-10 pointer-events-none ${bgInfo.effect}`} />}
-          <div className="absolute inset-0 bg-white/10 dark:bg-black/20 backdrop-blur-[1px] z-0" />
+          <div className="absolute inset-0 bg-black/10 dark:bg-black/30 backdrop-blur-[2px] z-0" />
         </div>
       )}
 
       <div className="container mx-auto p-4 md:p-10 space-y-8 max-w-7xl relative z-10 flex-1">
-        <header className="flex flex-col md:flex-row gap-6 items-center justify-between glass-card p-5 rounded-[2rem] shadow-2xl">
-          <div className="flex items-center gap-8">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-primary rounded-2xl shadow-xl shadow-primary/30">
-                <Sun className="h-7 w-7 text-white" />
+        <header className="flex flex-col md:flex-row gap-6 items-center justify-between glass-card p-6 rounded-[2rem]">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-primary/20 backdrop-blur-xl rounded-2xl">
+                <Sun className="h-7 w-7 text-primary" />
               </div>
               <h1 className="text-3xl font-black tracking-tighter text-primary">ForecastAI</h1>
             </div>
-            <div className="hidden lg:block h-10 w-px bg-white/20" />
+            <div className="hidden lg:block h-10 w-px bg-white/10" />
             <RealTimeClock />
           </div>
           
-          <div className="flex items-center gap-5 w-full md:w-auto">
-            <div className="flex-1 md:w-[350px]">
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className="flex-1 md:w-[300px]">
               <CitySearch onSearch={handleSearch} onCurrentLocation={handleCurrentLocation} />
             </div>
-            <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-3">
               <Button
                 variant="outline"
                 size="icon"
                 onClick={toggleTheme}
-                className="h-12 w-12 rounded-2xl glass-card hover:bg-white/40 transition-all shadow-lg border-white/30"
-                title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+                className="h-11 w-11 rounded-2xl glass-card border-white/10"
               >
-                {theme === 'light' ? (
-                  <Moon className="h-[1.4rem] w-[1.4rem] transition-all" />
-                ) : (
-                  <Sun className="h-[1.4rem] w-[1.4rem] transition-all" />
-                )}
+                {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
               </Button>
               <button
                 onClick={toggleUnit}
-                className="px-5 py-2 h-12 glass-card rounded-2xl font-bold hover:bg-white/40 transition-all shadow-lg text-lg min-w-[60px] border-white/30"
+                className="px-4 py-2 h-11 glass-card rounded-2xl font-bold border-white/10 min-w-[50px]"
               >
                 °{unit}
               </button>
@@ -185,10 +174,10 @@ export function WeatherDashboard() {
         </header>
 
         {error && (
-          <Alert variant="destructive" className="rounded-3xl shadow-xl border-destructive/30 bg-destructive/10 backdrop-blur-xl">
+          <Alert variant="destructive" className="glass-card border-destructive/20 bg-destructive/5">
             <Info className="h-5 w-5" />
-            <AlertTitle className="font-bold">Weather Notice</AlertTitle>
-            <AlertDescription className="text-sm font-medium">{error}</AlertDescription>
+            <AlertTitle className="font-bold text-white">Notice</AlertTitle>
+            <AlertDescription className="text-white/80">{error}</AlertDescription>
           </Alert>
         )}
 
@@ -196,13 +185,12 @@ export function WeatherDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             <div className="lg:col-span-8 space-y-8">
               <CurrentWeatherCard data={weatherData.current} unit={unit} />
+              <AIWeatherSummary weatherData={weatherData} />
               
               <div className="glass-card rounded-[2.5rem] p-8">
                 <div className="flex items-center justify-between mb-8">
                   <h3 className="font-bold text-xl flex items-center gap-3">
-                    <div className="p-2 bg-primary/20 rounded-xl">
-                      <Thermometer className="h-6 w-6 text-primary" />
-                    </div>
+                    <Thermometer className="h-6 w-6 text-primary" />
                     Hourly Trend
                   </h3>
                 </div>

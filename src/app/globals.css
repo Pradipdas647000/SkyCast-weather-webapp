@@ -6,7 +6,7 @@
   :root {
     --background: 210 40% 98%;
     --foreground: 222 47% 11%;
-    --card: 0 0% 100% / 0.7;
+    --card: 0 0% 100% / 0.15;
     --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
@@ -20,20 +20,15 @@
     --accent-foreground: 222 47% 11.2%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
+    --border: 0 0% 100% / 0.2;
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
-    --chart-1: 224 100% 58%;
-    --chart-2: 187 71% 57%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 1.25rem;
+    --radius: 1.5rem;
   }
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 6.9% / 0.7;
+    --card: 222.2 84% 6.9% / 0.3;
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
@@ -47,7 +42,7 @@
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
+    --border: 0 0% 100% / 0.1;
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 48%;
   }
@@ -62,39 +57,20 @@
   }
 }
 
+.glass-card {
+  @apply bg-white/10 dark:bg-black/20 backdrop-blur-2xl border border-white/20 dark:border-white/10 shadow-2xl;
+}
+
+.glass-card-hover {
+  @apply transition-all duration-300 hover:bg-white/20 dark:hover:bg-black/30 hover:border-white/40 dark:hover:border-white/20 hover:scale-[1.01];
+}
+
 .weather-bg-container {
   @apply fixed inset-0 w-full h-full -z-50 overflow-hidden pointer-events-none;
 }
 
 .weather-bg-image {
-  @apply absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 brightness-[0.75] dark:brightness-[0.45];
-}
-
-/* Live Weather Effects - Static versions to avoid flickering */
-.effect-clouds {
-  @apply absolute inset-0 w-[200%] h-full opacity-20 z-10 pointer-events-none;
-  background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 70%);
-  animation: move-clouds 120s linear infinite;
-}
-
-.effect-snow {
-  @apply absolute inset-0 w-full h-full z-10 pointer-events-none;
-  background-image: radial-gradient(circle at center, white 1px, transparent 1px);
-  background-size: 60px 60px;
-  opacity: 0.3;
-}
-
-@keyframes move-clouds {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-
-.glass-card {
-  @apply bg-white/25 dark:bg-black/30 backdrop-blur-2xl border border-white/40 dark:border-white/10 shadow-2xl;
-}
-
-.glass-card-hover {
-  @apply transition-all duration-300 hover:bg-white/35 dark:hover:bg-black/40 hover:border-white/60 dark:hover:border-white/20 hover:scale-[1.01] hover:shadow-primary/10;
+  @apply absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 brightness-[0.8] dark:brightness-[0.5];
 }
 
 .animate-float {

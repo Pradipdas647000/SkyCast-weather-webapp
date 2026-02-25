@@ -41,7 +41,6 @@ async function reverseGeocode(lat: number, lon: number): Promise<string> {
       `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`
     );
     const data = await response.json();
-    // Prefer city, then locality, then principalSubdivision
     return data.city || data.locality || data.principalSubdivision || "";
   } catch (error) {
     console.error('Reverse geocoding failed:', error);
@@ -53,7 +52,7 @@ async function reverseGeocode(lat: number, lon: number): Promise<string> {
  * Fetches full weather data for given coordinates.
  */
 async function getWeatherData(lat: number, lon: number, cityName: string): Promise<WeatherData> {
-  const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,surface_pressure,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_probability_max&timezone=auto`;
+  const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,surface_pressure,wind_speed_10m,is_day&hourly=temperature_2m,precipitation_probability,weather_code,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_probability_max&timezone=auto`;
   const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=us_aqi`;
 
   const [forecastRes, aqiRes] = await Promise.all([
@@ -67,7 +66,6 @@ async function getWeatherData(lat: number, lon: number, cityName: string): Promi
   const current = forecastData.current;
   const { condition, description } = mapWmoCode(current.weather_code);
 
-  // Map Daily
   const daily: DailyForecastItem[] = forecastData.daily.time.map((time: string, i: number) => {
     const dayCode = forecastData.daily.weather_code[i];
     const dayInfo = mapWmoCode(dayCode);
@@ -79,11 +77,10 @@ async function getWeatherData(lat: number, lon: number, cityName: string): Promi
       description: dayInfo.description,
       condition: dayInfo.condition,
       precipitationChance: forecastData.daily.precipitation_probability_max[i],
-      icon: dayInfo.condition // Using condition as icon key for simplicity
+      icon: dayInfo.condition
     };
   });
 
-  // Map Hourly (next 24 hours)
   const hourly: HourlyForecastItem[] = forecastData.hourly.time.slice(0, 24).map((time: string, i: number) => {
     const dateObj = new Date(time);
     return {
@@ -105,7 +102,8 @@ async function getWeatherData(lat: number, lon: number, cityName: string): Promi
     uvi: Math.round(forecastData.daily.uv_index_max[0]),
     aqi: Math.round(aqiData.current.us_aqi || 0),
     pressure: Math.round(current.surface_pressure),
-    visibility: Math.round((forecastData.hourly.visibility[0] || 10000) / 1000) // Convert meters to km
+    visibility: Math.round((forecastData.hourly.visibility[0] || 10000) / 1000),
+    isDay: current.is_day === 1
   };
 
   return {
@@ -115,9 +113,6 @@ async function getWeatherData(lat: number, lon: number, cityName: string): Promi
   };
 }
 
-/**
- * Fetches weather data for a specific city.
- */
 export async function fetchWeather(city: string): Promise<WeatherData> {
   try {
     const location = await getCoordinates(city);
@@ -128,9 +123,6 @@ export async function fetchWeather(city: string): Promise<WeatherData> {
   }
 }
 
-/**
- * Fetches weather data based on geographic coordinates.
- */
 export async function fetchWeatherByCoords(lat: number, lon: number): Promise<WeatherData> {
   try {
     const cityName = await reverseGeocode(lat, lon);

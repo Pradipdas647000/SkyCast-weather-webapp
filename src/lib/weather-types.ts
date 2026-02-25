@@ -10,6 +10,7 @@ export interface CurrentWeather {
   aqi: number;
   pressure: number;
   visibility: number;
+  isDay: boolean;
 }
 
 export interface DailyForecastItem {
