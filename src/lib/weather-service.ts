@@ -57,15 +57,22 @@ function formatCelestialTime(isoString: string | undefined): string {
   if (!isoString) return "N/A";
   try {
     // Open-Meteo returns YYYY-MM-DDTHH:MM without TZ. We treat it as local.
-    const date = new Date(isoString);
-    if (isNaN(date.getTime())) return "N/A";
+    // To ensure reliable parsing across environments, we split the string.
+    const parts = isoString.split('T');
+    if (parts.length < 2) return "N/A";
     
-    return date.toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
-      minute: '2-digit', 
-      hour12: true 
-    });
+    const timePart = parts[1]; // HH:MM
+    const [hours, minutes] = timePart.split(':');
+    const h = parseInt(hours, 10);
+    const m = parseInt(minutes, 10);
+    
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const h12 = h % 12 || 12;
+    const mStr = m.toString().padStart(2, '0');
+    
+    return `${h12}:${mStr} ${ampm}`;
   } catch (e) {
+    console.error('Error formatting celestial time:', e);
     return "N/A";
   }
 }
@@ -74,7 +81,6 @@ function formatCelestialTime(isoString: string | undefined): string {
  * Fetches full weather data for given coordinates.
  */
 async function getWeatherData(lat: number, lon: number, cityName: string): Promise<WeatherData> {
-  // We include sunrise/sunset in the main forecast as it's more reliable
   const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,surface_pressure,wind_speed_10m,is_day&hourly=temperature_2m,precipitation_probability,weather_code,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_probability_max,sunrise,sunset&timezone=auto`;
   const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=us_aqi`;
   const astronomyUrl = `https://api.open-meteo.com/v1/astronomy?latitude=${lat}&longitude=${lon}&daily=moonrise,moonset&timezone=auto`;
@@ -94,7 +100,6 @@ async function getWeatherData(lat: number, lon: number, cityName: string): Promi
   const current = forecastData.current;
   const { condition, description } = mapWmoCode(current.weather_code);
 
-  // Correctly find the index for the current hour in hourly visibility data
   const currentHourString = current.time.substring(0, 14) + '00';
   const currentIndex = forecastData.hourly.time.indexOf(currentHourString);
   const currentVisibility = currentIndex !== -1 
