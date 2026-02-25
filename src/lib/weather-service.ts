@@ -18,21 +18,6 @@ function mapWmoCode(code: number): { condition: CurrentWeather['condition']; des
 }
 
 /**
- * Maps moon phase value to readable description
- */
-function getMoonPhase(phase: number): string {
-  if (phase === 0 || phase === 1) return 'New Moon';
-  if (phase > 0 && phase < 0.25) return 'Waxing Crescent';
-  if (phase === 0.25) return 'First Quarter';
-  if (phase > 0.25 && phase < 0.5) return 'Waxing Gibbous';
-  if (phase === 0.5) return 'Full Moon';
-  if (phase > 0.5 && phase < 0.75) return 'Waning Gibbous';
-  if (phase === 0.75) return 'Last Quarter';
-  if (phase > 0.75 && phase < 1) return 'Waning Crescent';
-  return 'Unknown';
-}
-
-/**
  * Fetches coordinates for a city name using Open-Meteo Geocoding API.
  */
 async function getCoordinates(city: string) {
@@ -66,10 +51,25 @@ async function reverseGeocode(lat: number, lon: number): Promise<string> {
 }
 
 /**
+ * Helper to format ISO time strings to readable 12h format
+ */
+function formatCelestialTime(isoString: string): string {
+  try {
+    return new Date(isoString).toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit', 
+      hour12: true 
+    });
+  } catch (e) {
+    return "N/A";
+  }
+}
+
+/**
  * Fetches full weather data for given coordinates.
  */
 async function getWeatherData(lat: number, lon: number, cityName: string): Promise<WeatherData> {
-  const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,surface_pressure,wind_speed_10m,is_day&hourly=temperature_2m,precipitation_probability,weather_code,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_probability_max,sunrise,sunset&timezone=auto`;
+  const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,surface_pressure,wind_speed_10m,is_day&hourly=temperature_2m,precipitation_probability,weather_code,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_probability_max&timezone=auto`;
   const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=us_aqi`;
   const astronomyUrl = `https://api.open-meteo.com/v1/astronomy?latitude=${lat}&longitude=${lon}&daily=sunrise,sunset,moonrise,moonset&timezone=auto`;
 
@@ -88,7 +88,9 @@ async function getWeatherData(lat: number, lon: number, cityName: string): Promi
   const current = forecastData.current;
   const { condition, description } = mapWmoCode(current.weather_code);
 
-  const currentIndex = forecastData.hourly.time.indexOf(current.time);
+  // Correctly find the index for the current hour in hourly visibility data
+  const currentHourString = current.time.substring(0, 14) + '00';
+  const currentIndex = forecastData.hourly.time.indexOf(currentHourString);
   const currentVisibility = currentIndex !== -1 
     ? (forecastData.hourly.visibility[currentIndex] || 10000) 
     : (forecastData.hourly.visibility[0] || 10000);
@@ -119,11 +121,11 @@ async function getWeatherData(lat: number, lon: number, cityName: string): Promi
   });
 
   const celestial: CelestialData = {
-    sunrise: astronomyData?.daily?.sunrise?.[0] ? new Date(astronomyData.daily.sunrise[0]).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : "N/A",
-    sunset: astronomyData?.daily?.sunset?.[0] ? new Date(astronomyData.daily.sunset[0]).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : "N/A",
-    moonrise: astronomyData?.daily?.moonrise?.[0] ? new Date(astronomyData.daily.moonrise[0]).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : "N/A",
-    moonset: astronomyData?.daily?.moonset?.[0] ? new Date(astronomyData.daily.moonset[0]).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : "N/A",
-    moonPhase: "Moon Phase data N/A" // Simplified as Open-Meteo doesn't provide direct string phase in simple daily astronomy
+    sunrise: astronomyData?.daily?.sunrise?.[0] ? formatCelestialTime(astronomyData.daily.sunrise[0]) : "N/A",
+    sunset: astronomyData?.daily?.sunset?.[0] ? formatCelestialTime(astronomyData.daily.sunset[0]) : "N/A",
+    moonrise: astronomyData?.daily?.moonrise?.[0] ? formatCelestialTime(astronomyData.daily.moonrise[0]) : "N/A",
+    moonset: astronomyData?.daily?.moonset?.[0] ? formatCelestialTime(astronomyData.daily.moonset[0]) : "N/A",
+    moonPhase: "Moon Phase data N/A"
   };
 
   const currentWeather: CurrentWeather = {

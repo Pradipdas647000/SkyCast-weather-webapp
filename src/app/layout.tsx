@@ -3,7 +3,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'SkyCast - Advanced Weather Intelligence',
-  description: 'AI-powered weather forecasting with interactive charts and celestial insights.',
+  description: 'Pro-grade weather forecasting with immersive glass UI and celestial insights.',
 };
 
 export default function RootLayout({
