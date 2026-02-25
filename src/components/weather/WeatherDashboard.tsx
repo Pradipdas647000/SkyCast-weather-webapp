@@ -105,10 +105,15 @@ export function WeatherDashboard() {
         image: PlaceHolderImages.find(img => img.id === 'cloudy-sky'),
         effect: 'effect-clouds'
       };
-    } else if (['rain', 'drizzle', 'thunderstorm'].includes(condition)) {
+    } else if (['rain', 'drizzle'].includes(condition)) {
       return { 
         image: PlaceHolderImages.find(img => img.id === 'rainy-sky'),
         effect: 'effect-rain'
+      };
+    } else if (condition === 'thunderstorm') {
+      return { 
+        image: PlaceHolderImages.find(img => img.id === 'rainy-sky'),
+        effect: 'effect-rain effect-lightning'
       };
     } else if (condition === 'snow') {
       return { 
@@ -156,9 +161,11 @@ export function WeatherDashboard() {
             priority
             data-ai-hint={bgInfo.image.imageHint}
           />
-          {bgInfo.effect && <div className={`${bgInfo.effect} fixed inset-0 z-10 pointer-events-none opacity-50`} />}
-          {/* Overlay to ensure readability */}
-          <div className="absolute inset-0 bg-white/10 dark:bg-black/30 backdrop-blur-[1px] z-0" />
+          {bgInfo.effect && (
+            <div className={`fixed inset-0 z-10 pointer-events-none ${bgInfo.effect}`} />
+          )}
+          {/* Overlay to ensure readability and atmospheric tone */}
+          <div className="absolute inset-0 bg-white/20 dark:bg-black/40 backdrop-blur-[2px] z-0" />
         </div>
       )}
 
@@ -170,10 +177,10 @@ export function WeatherDashboard() {
 
       <div className="container mx-auto p-4 md:p-10 space-y-8 max-w-7xl relative z-10 flex-1">
         {/* Header Section */}
-        <header className="flex flex-col md:flex-row gap-6 items-center justify-between glass-card p-5 rounded-[2rem] border-white/20">
+        <header className="flex flex-col md:flex-row gap-6 items-center justify-between glass-card p-5 rounded-[2rem]">
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-primary rounded-2xl shadow-xl shadow-primary/30 animate-pulse">
+              <div className="p-3 bg-primary rounded-2xl shadow-xl shadow-primary/30">
                 <Sun className="h-7 w-7 text-white" />
               </div>
               <h1 className="text-3xl font-black tracking-tighter text-primary">ForecastAI</h1>
@@ -191,7 +198,7 @@ export function WeatherDashboard() {
                 variant="outline"
                 size="icon"
                 onClick={toggleTheme}
-                className="h-12 w-12 rounded-2xl border-white/20 bg-white/40 dark:bg-black/40 backdrop-blur-md hover:bg-white/60 transition-all shadow-lg"
+                className="h-12 w-12 rounded-2xl glass-card hover:bg-white/60 transition-all shadow-lg"
                 title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
               >
                 {theme === 'light' ? (
@@ -199,11 +206,10 @@ export function WeatherDashboard() {
                 ) : (
                   <Sun className="h-[1.4rem] w-[1.4rem] transition-all" />
                 )}
-                <span className="sr-only">Toggle theme</span>
               </Button>
               <button
                 onClick={toggleUnit}
-                className="px-5 py-2 h-12 border-white/20 rounded-2xl font-bold hover:bg-white/60 bg-white/40 dark:bg-black/40 backdrop-blur-md transition-all shadow-lg text-lg min-w-[60px]"
+                className="px-5 py-2 h-12 glass-card rounded-2xl font-bold hover:bg-white/60 transition-all shadow-lg text-lg min-w-[60px]"
               >
                 °{unit}
               </button>
@@ -219,7 +225,7 @@ export function WeatherDashboard() {
           </Alert>
         )}
 
-        {/* Hero Section */}
+        {/* Dashboard Content */}
         {weatherData && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             <div className="lg:col-span-8 space-y-8">
@@ -233,10 +239,6 @@ export function WeatherDashboard() {
                     </div>
                     Hourly Trend
                   </h3>
-                  <div className="flex gap-2">
-                    <div className="w-3 h-3 rounded-full bg-primary" />
-                    <div className="w-3 h-3 rounded-full bg-blue-500 opacity-50" />
-                  </div>
                 </div>
                 <div className="h-[300px] w-full">
                   <HourlyChart data={weatherData.hourly} unit={unit} />

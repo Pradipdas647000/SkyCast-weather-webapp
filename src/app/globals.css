@@ -67,39 +67,48 @@
 }
 
 .weather-bg-image {
-  @apply absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 brightness-[0.7] dark:brightness-[0.4];
+  @apply absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 brightness-[0.75] dark:brightness-[0.45];
 }
 
-/* Live Effects */
+/* Live Weather Effects */
 .effect-rain {
-  @apply absolute inset-0 w-full h-full overflow-hidden z-10;
-  background-image: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 100%);
+  @apply absolute inset-0 w-full h-full overflow-hidden z-10 pointer-events-none;
 }
 
 .effect-rain::before {
   content: "";
   @apply absolute inset-0 w-full h-full;
-  background-image: url("https://www.transparenttextures.com/patterns/60-lines.png");
-  opacity: 0.3;
-  animation: rain 0.3s linear infinite;
+  background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.4) 50%, transparent);
+  background-size: 1.5px 150px;
+  animation: rain-fall 0.6s linear infinite;
+}
+
+.effect-lightning {
+  @apply absolute inset-0 w-full h-full z-20 pointer-events-none;
+  animation: lightning-flash 6s ease-in-out infinite;
 }
 
 .effect-clouds {
-  @apply absolute inset-0 w-[200%] h-full opacity-30 z-10;
+  @apply absolute inset-0 w-[200%] h-full opacity-30 z-10 pointer-events-none;
   background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
-  animation: move-clouds 80s linear infinite;
+  animation: move-clouds 100s linear infinite;
 }
 
 .effect-snow {
-  @apply absolute inset-0 w-full h-full z-10;
+  @apply absolute inset-0 w-full h-full z-10 pointer-events-none;
   background-image: radial-gradient(circle at center, white 2px, transparent 2px);
-  background-size: 60px 60px;
-  animation: snow 15s linear infinite;
+  background-size: 50px 50px;
+  animation: snow-fall 15s linear infinite;
 }
 
-@keyframes rain {
-  from { transform: translateY(-100px); }
-  to { transform: translateY(100px); }
+@keyframes rain-fall {
+  from { background-position: 0 0; }
+  to { background-position: 0 1000px; }
+}
+
+@keyframes lightning-flash {
+  0%, 95%, 98%, 100% { background: transparent; }
+  96%, 97%, 99% { background: rgba(255, 255, 255, 0.15); }
 }
 
 @keyframes move-clouds {
@@ -107,7 +116,7 @@
   to { transform: translateX(-50%); }
 }
 
-@keyframes snow {
+@keyframes snow-fall {
   from { background-position: 0 0; }
   to { background-position: 100px 1000px; }
 }

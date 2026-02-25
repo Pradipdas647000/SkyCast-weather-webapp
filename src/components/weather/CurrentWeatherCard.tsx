@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CurrentWeather } from '@/lib/weather-types';
-import { Sun, Cloud, CloudRain, CloudSnow, Wind, Droplets, MapPin } from 'lucide-react';
+import { Sun, Cloud, CloudRain, CloudSnow, Wind, Droplets, MapPin, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface Props {
@@ -14,7 +14,6 @@ export function CurrentWeatherCard({ data, unit }: Props) {
   const temp = unit === 'F' ? Math.round((data.temperature * 9/5) + 32) : Math.round(data.temperature);
   const feelsLike = unit === 'F' ? Math.round((data.feelsLike * 9/5) + 32) : Math.round(data.feelsLike);
 
-  // Check if it's "Your Location" format from the service
   const isYourLocation = data.cityName.startsWith('Your Location');
   const cityNameMatch = data.cityName.match(/\(([^)]+)\)/);
   const citySubName = cityNameMatch ? cityNameMatch[1] : null;
@@ -25,18 +24,21 @@ export function CurrentWeatherCard({ data, unit }: Props) {
       case 'clear': return <Sun className="h-24 w-24 text-yellow-400" />;
       case 'clouds': return <Cloud className="h-24 w-24 text-slate-400" />;
       case 'rain': return <CloudRain className="h-24 w-24 text-blue-400" />;
+      case 'drizzle': return <CloudRain className="h-24 w-24 text-blue-300 opacity-80" />;
+      case 'thunderstorm': return <Zap className="h-24 w-24 text-yellow-500" />;
       case 'snow': return <CloudSnow className="h-24 w-24 text-blue-100" />;
-      default: return <Sun className="h-24 w-24 text-yellow-400" />;
+      default: return <Cloud className="h-24 w-24 text-slate-400" />;
     }
   };
 
   const getGradientClass = () => {
     switch (data.condition) {
-      case 'clear': return 'from-blue-400/20 to-cyan-300/20';
-      case 'clouds': return 'from-slate-400/20 to-slate-500/20';
-      case 'rain': return 'from-blue-600/20 to-blue-800/20';
-      case 'snow': return 'from-blue-100/20 to-slate-200/20';
-      default: return 'from-blue-400/20 to-cyan-300/20';
+      case 'clear': return 'from-blue-400/10 to-cyan-300/10';
+      case 'clouds': return 'from-slate-400/10 to-slate-500/10';
+      case 'rain': return 'from-blue-600/10 to-blue-800/10';
+      case 'thunderstorm': return 'from-indigo-900/10 to-blue-900/10';
+      case 'snow': return 'from-blue-100/10 to-slate-200/10';
+      default: return 'from-blue-400/10 to-cyan-300/10';
     }
   };
 
@@ -44,8 +46,10 @@ export function CurrentWeatherCard({ data, unit }: Props) {
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`relative overflow-hidden bg-gradient-to-br ${getGradientClass()} border rounded-[2.5rem] p-8 md:p-10 shadow-sm`}
+      className={`relative overflow-hidden glass-card rounded-[2.5rem] p-8 md:p-10 shadow-2xl`}
     >
+      <div className={`absolute inset-0 bg-gradient-to-br ${getGradientClass()} pointer-events-none opacity-50`} />
+      
       <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
         <div className="space-y-4">
           <div>
@@ -65,11 +69,11 @@ export function CurrentWeatherCard({ data, unit }: Props) {
           </div>
 
           <div className="flex flex-wrap gap-4 pt-2">
-            <div className="flex items-center gap-2 bg-white/50 dark:bg-black/20 backdrop-blur-sm px-4 py-2 rounded-2xl">
+            <div className="flex items-center gap-2 bg-primary/10 backdrop-blur-md px-4 py-2 rounded-2xl">
               <Wind className="h-5 w-5 text-primary" />
               <span className="font-semibold">{data.windSpeed} km/h</span>
             </div>
-            <div className="flex items-center gap-2 bg-white/50 dark:bg-black/20 backdrop-blur-sm px-4 py-2 rounded-2xl">
+            <div className="flex items-center gap-2 bg-blue-500/10 backdrop-blur-md px-4 py-2 rounded-2xl">
               <Droplets className="h-5 w-5 text-blue-500" />
               <span className="font-semibold">{data.humidity}%</span>
             </div>
@@ -83,10 +87,6 @@ export function CurrentWeatherCard({ data, unit }: Props) {
           <span className="text-2xl font-bold capitalize">{data.description}</span>
         </div>
       </div>
-
-      {/* Background Decorative Circles */}
-      <div className="absolute top-[-10%] right-[-5%] w-64 h-64 bg-primary/10 rounded-full blur-3xl -z-0" />
-      <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-accent/10 rounded-full blur-3xl -z-0" />
     </motion.div>
   );
 }
