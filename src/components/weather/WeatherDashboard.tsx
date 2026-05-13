@@ -152,9 +152,6 @@ export function WeatherDashboard() {
         <header className="flex flex-col md:flex-row gap-6 items-center justify-between glass-card p-6 rounded-[2rem]">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-primary/20 backdrop-blur-xl rounded-2xl">
-                <Sun className="h-7 w-7 text-primary" />
-              </div>
               <h1 className="text-3xl font-black tracking-tighter text-primary">SkyCast</h1>
             </div>
             <div className="hidden lg:block h-10 w-px bg-white/10" />
