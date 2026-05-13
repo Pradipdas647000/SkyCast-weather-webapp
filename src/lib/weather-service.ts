@@ -25,6 +25,7 @@ async function getCoordinates(city: string) {
     `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`,
     { next: { revalidate: 3600 } }
   );
+  if (!response.ok) throw new Error('Geocoding service unavailable');
   const data = await response.json();
   if (!data.results || data.results.length === 0) {
     throw new Error('City not found');
@@ -53,18 +54,18 @@ async function reverseGeocode(lat: number, lon: number): Promise<string> {
  * Helper to format ISO time strings to readable 12h format
  */
 function formatCelestialTime(isoString: string | null | undefined): string {
-  if (!isoString) return "--:--";
+  if (!isoString) return "N/A";
   try {
     // Open-Meteo returns YYYY-MM-DDTHH:MM
     const parts = isoString.split('T');
-    if (parts.length < 2) return "--:--";
+    if (parts.length < 2) return "N/A";
     
     const timePart = parts[1]; // HH:MM
     const [hours, minutes] = timePart.split(':');
     const h = parseInt(hours, 10);
     const m = parseInt(minutes, 10);
     
-    if (isNaN(h) || isNaN(m)) return "--:--";
+    if (isNaN(h) || isNaN(m)) return "N/A";
 
     const ampm = h >= 12 ? 'PM' : 'AM';
     const h12 = h % 12 || 12;
@@ -72,7 +73,7 @@ function formatCelestialTime(isoString: string | null | undefined): string {
     
     return `${h12}:${mStr} ${ampm}`;
   } catch (e) {
-    return "--:--";
+    return "N/A";
   }
 }
 
@@ -99,6 +100,7 @@ async function getWeatherData(lat: number, lon: number, cityName: string): Promi
   const current = forecastData.current;
   const { condition, description } = mapWmoCode(current.weather_code);
 
+  // Correct visibility index finding for current hour
   const currentHourString = current.time.substring(0, 14) + '00';
   const currentIndex = forecastData.hourly.time.indexOf(currentHourString);
   const currentVisibility = currentIndex !== -1 
@@ -162,20 +164,12 @@ async function getWeatherData(lat: number, lon: number, cityName: string): Promi
 }
 
 export async function fetchWeather(city: string): Promise<WeatherData> {
-  try {
-    const location = await getCoordinates(city);
-    return await getWeatherData(location.latitude, location.longitude, location.name);
-  } catch (error) {
-    throw error;
-  }
+  const location = await getCoordinates(city);
+  return await getWeatherData(location.latitude, location.longitude, location.name);
 }
 
 export async function fetchWeatherByCoords(lat: number, lon: number): Promise<WeatherData> {
-  try {
-    const cityName = await reverseGeocode(lat, lon);
-    const displayName = cityName ? `Your Location (${cityName})` : "Your Location";
-    return await getWeatherData(lat, lon, displayName);
-  } catch (error) {
-    throw error;
-  }
+  const cityName = await reverseGeocode(lat, lon);
+  const displayName = cityName ? cityName : "Your Location";
+  return await getWeatherData(lat, lon, displayName);
 }
