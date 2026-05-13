@@ -51,27 +51,24 @@ async function reverseGeocode(lat: number, lon: number): Promise<string> {
 }
 
 /**
- * Helper to format ISO time strings to readable 12h format
+ * Robustly formats ISO time strings to readable 12h format
  */
 function formatCelestialTime(isoString: string | null | undefined): string {
   if (!isoString) return "N/A";
   try {
-    // Open-Meteo returns YYYY-MM-DDTHH:MM
-    const parts = isoString.split('T');
-    if (parts.length < 2) return "N/A";
-    
-    const timePart = parts[1]; // HH:MM
-    const [hours, minutes] = timePart.split(':');
-    const h = parseInt(hours, 10);
-    const m = parseInt(minutes, 10);
-    
-    if (isNaN(h) || isNaN(m)) return "N/A";
-
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    const h12 = h % 12 || 12;
-    const mStr = m.toString().padStart(2, '0');
-    
-    return `${h12}:${mStr} ${ampm}`;
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) {
+      // Fallback for direct HH:MM strings if needed
+      const parts = isoString.split('T');
+      if (parts.length < 2) return "N/A";
+      const [hStr, mStr] = parts[1].split(':');
+      let h = parseInt(hStr, 10);
+      const m = parseInt(mStr, 10);
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const h12 = h % 12 || 12;
+      return `${h12}:${mStr.padStart(2, '0')} ${ampm}`;
+    }
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
   } catch (e) {
     return "N/A";
   }
@@ -81,6 +78,7 @@ function formatCelestialTime(isoString: string | null | undefined): string {
  * Fetches full weather data for given coordinates.
  */
 async function getWeatherData(lat: number, lon: number, cityName: string): Promise<WeatherData> {
+  // Combine all metrics into as few calls as possible for better performance and reliability
   const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,surface_pressure,wind_speed_10m,is_day&hourly=temperature_2m,precipitation_probability,weather_code,visibility&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_probability_max,sunrise,sunset&timezone=auto`;
   const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=us_aqi`;
   const astronomyUrl = `https://api.open-meteo.com/v1/astronomy?latitude=${lat}&longitude=${lon}&daily=moonrise,moonset&timezone=auto`;
@@ -101,8 +99,9 @@ async function getWeatherData(lat: number, lon: number, cityName: string): Promi
   const { condition, description } = mapWmoCode(current.weather_code);
 
   // Correct visibility index finding for current hour
-  const currentHourString = current.time.substring(0, 14) + '00';
-  const currentIndex = forecastData.hourly.time.indexOf(currentHourString);
+  const now = new Date();
+  const currentHourISO = current.time; // Use the API's current time reference
+  const currentIndex = forecastData.hourly.time.indexOf(currentHourISO);
   const currentVisibility = currentIndex !== -1 
     ? (forecastData.hourly.visibility[currentIndex] || 10000) 
     : (forecastData.hourly.visibility[0] || 10000);
@@ -137,7 +136,7 @@ async function getWeatherData(lat: number, lon: number, cityName: string): Promi
     sunset: formatCelestialTime(forecastData.daily.sunset?.[0]),
     moonrise: formatCelestialTime(astronomyData?.daily?.moonrise?.[0]),
     moonset: formatCelestialTime(astronomyData?.daily?.moonset?.[0]),
-    moonPhase: "Moon Phase data N/A"
+    moonPhase: "Active Phase"
   };
 
   const currentWeather: CurrentWeather = {

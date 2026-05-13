@@ -11,7 +11,7 @@ import { CitySearch } from './CitySearch';
 import { RealTimeClock } from './RealTimeClock';
 import { CelestialInfo } from './CelestialInfo';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Sun, Moon, Thermometer, Info } from 'lucide-react';
+import { Sun, Moon, Thermometer, Info, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -21,6 +21,7 @@ export function WeatherDashboard() {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [geoError, setGeoError] = useState<string | null>(null);
   const [unit, setUnit] = useState<'C' | 'F'>('C');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
@@ -37,7 +38,8 @@ export function WeatherDashboard() {
       const data = await fetchWeather(city);
       setWeatherData(data);
     } catch (err) {
-      setError('Failed to fetch weather data. Please try again.');
+      console.error('Fetch error:', err);
+      setError('Failed to fetch weather data. Please try searching for a city.');
     } finally {
       setLoading(false);
     }
@@ -45,14 +47,16 @@ export function WeatherDashboard() {
 
   const handleCurrentLocation = useCallback(() => {
     if (typeof window === 'undefined') return;
+    
+    setLoading(true);
+    setError(null);
+    setGeoError(null);
+
     if (!("geolocation" in navigator)) {
-      setError("Geolocation is not supported by your browser.");
+      setGeoError("Geolocation is not supported by your browser.");
       loadWeather();
       return;
     }
-
-    setLoading(true);
-    setError(null);
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
@@ -66,12 +70,16 @@ export function WeatherDashboard() {
           setLoading(false);
         }
       },
-      (geoError) => {
-        console.error("Geolocation error:", geoError);
-        setError("Unable to retrieve your location. Showing default city.");
+      (err) => {
+        console.warn("Geolocation error:", err.message);
+        if (err.code === 1) {
+          setGeoError("Location access was denied or disabled by policy. Showing San Francisco instead.");
+        } else {
+          setGeoError("Unable to retrieve your location. Showing San Francisco.");
+        }
         loadWeather('San Francisco');
       },
-      { timeout: 10000 }
+      { timeout: 8000 }
     );
   }, [loadWeather]);
 
@@ -115,7 +123,10 @@ export function WeatherDashboard() {
         <Skeleton className="h-16 w-full rounded-2xl" />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <Skeleton className="h-96 lg:col-span-2 rounded-[2.5rem]" />
-          <Skeleton className="h-96 rounded-[2.5rem]" />
+          <div className="space-y-8">
+             <Skeleton className="h-48 rounded-[2rem]" />
+             <Skeleton className="h-48 rounded-[2rem]" />
+          </div>
         </div>
       </div>
     );
@@ -173,11 +184,19 @@ export function WeatherDashboard() {
           </div>
         </header>
 
+        {geoError && (
+          <Alert variant="default" className="glass-card border-yellow-500/20 bg-yellow-500/5">
+            <AlertTriangle className="h-5 w-5 text-yellow-500" />
+            <AlertTitle className="font-bold text-yellow-500">Location Note</AlertTitle>
+            <AlertDescription className="text-foreground/80">{geoError}</AlertDescription>
+          </Alert>
+        )}
+
         {error && (
           <Alert variant="destructive" className="glass-card border-destructive/20 bg-destructive/5">
             <Info className="h-5 w-5" />
-            <AlertTitle className="font-bold text-white">Notice</AlertTitle>
-            <AlertDescription className="text-white/80">{error}</AlertDescription>
+            <AlertTitle className="font-bold">Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 

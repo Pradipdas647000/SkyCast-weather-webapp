@@ -21,7 +21,7 @@ export function CelestialInfo({ data }: Props) {
           <div className="p-3 bg-orange-500/20 rounded-2xl">
             <Sunrise className="h-6 w-6 text-orange-400" />
           </div>
-          <h3 className="text-xl font-bold text-white">Daylight Schedule</h3>
+          <h3 className="text-xl font-bold text-white">Sun Schedule</h3>
         </div>
         
         <div className="flex justify-around items-center gap-4 py-2">
@@ -54,7 +54,7 @@ export function CelestialInfo({ data }: Props) {
           <div className="p-3 bg-blue-500/20 rounded-2xl">
             <Moon className="h-6 w-6 text-blue-300" />
           </div>
-          <h3 className="text-xl font-bold text-white">Moon Time</h3>
+          <h3 className="text-xl font-bold text-white">Moon Schedule</h3>
         </div>
         
         <div className="flex justify-around items-center gap-4 py-2">
